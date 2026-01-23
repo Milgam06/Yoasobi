@@ -1,4 +1,4 @@
-import { DefaultLayout } from '@/components';
+import { DefaultLayout, Navbar } from '@/components';
 import { memo, useCallback, useState } from 'react';
 import { Stack, Text } from 'tamagui';
 
@@ -15,6 +15,7 @@ export const HomeScreen = memo(() => {
           Welcome to the Home Screen!
         </Text>
       </Stack>
+      <Navbar />
     </DefaultLayout>
   );
 });
