@@ -19,7 +19,7 @@ export const SplashScreen = memo(() => {
       return;
     }
     const routeTimeout = setTimeout(() => {
-      route.replace('/home/home');
+      route.replace('/(tabs)/home');
     }, 3000);
 
     return () => {
