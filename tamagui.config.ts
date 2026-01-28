@@ -6,6 +6,7 @@ const tokens = createTokens({
     midnightPurple: '#313252',
     moonSoftWhite: '#FDE8D6',
     streetBlack: '#100F1E',
+    cloudGray: '#858090',
     lampYellow: '#FED896',
   },
   size: {
