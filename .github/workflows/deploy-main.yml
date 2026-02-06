@@ -29,7 +29,7 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner.toLowerCase() }}/yoasobi-backend:main
+            ghcr.io/milgam06/yoasobi-backend:main
 
       - uses: appleboy/ssh-action@v1.2.0
         with:
