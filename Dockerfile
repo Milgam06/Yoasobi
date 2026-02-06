@@ -7,18 +7,18 @@ RUN corepack enable
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
 
-RUN npm ci
-
 COPY . .
-RUN npm run build
+RUN yarn run build
 
 # Runner stage
 FROM node:24-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-COPY package*.json ./
-RUN npm ci --omit=dev
+RUN corepack enable
+
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile --production=true
 
 COPY --from=builder /app/dist ./dist
 
