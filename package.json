@@ -1,0 +1,12 @@
+{
+  "name": "yoasobi",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/Milgam06/Yoasobi.git",
+  "author": "MILGAM <93873127+Milgam06@users.noreply.github.com>",
+  "license": "MIT",
+  "workspaces": [
+    "apps/client",
+    "apps/server"
+  ]
+}
