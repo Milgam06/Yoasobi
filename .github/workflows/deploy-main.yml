@@ -1,8 +1,10 @@
-name: Deploy (main)
+name: Deploy Backend (main)
 
-'on':
+"on":
   push:
-    branches: ['main']
+    branches: ["main"]
+    paths:
+      - "apps/server/**"
 
 permissions:
   contents: read
