@@ -5,7 +5,7 @@ name: Deploy Backend (main)
     branches: ["main"]
     paths:
       - "apps/server/**"
-      - "./deploy-backend.yml"
+      - ".github/workflows/**"
 
 permissions:
   contents: read
