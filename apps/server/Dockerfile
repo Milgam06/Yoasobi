@@ -1,6 +1,6 @@
 # Builder stage
 FROM node:24-alpine AS builder
-WORKDIR /app
+WORKDIR /apps/server
 
 RUN corepack enable
 
@@ -12,7 +12,7 @@ RUN yarn run build
 
 # Runner stage
 FROM node:24-alpine AS runner
-WORKDIR /app
+WORKDIR /apps/server
 ENV NODE_ENV=production
 
 RUN corepack enable
