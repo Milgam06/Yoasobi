@@ -8,6 +8,7 @@
   "license": "MIT",
   "workspaces": [
     "apps/client",
-    "apps/server"
+    "apps/server",
+    "packages/shared"
   ]
 }
