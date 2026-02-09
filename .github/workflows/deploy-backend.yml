@@ -5,6 +5,7 @@ name: Deploy Backend (main)
     branches: ["main"]
     paths:
       - "apps/server/**"
+      - "./deploy-backend.yml"
 
 permissions:
   contents: read
