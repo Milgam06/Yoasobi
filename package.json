@@ -10,5 +10,9 @@
     "apps/client",
     "apps/server",
     "packages/shared"
-  ]
+  ],
+  "scripts": {
+    "dev:client": "yarn workspace @yoasobi/client start",
+    "dev:server": "yarn workspace @yoasobi/server start:dev"
+  }
 }

@@ -15,6 +15,7 @@ import { NotificationModule } from './notification';
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
+      autoSchemaFile: '/pacakges/shared/graphql/schema.gql',
       playground: false,
     }),
     NotificationModule,
