@@ -13,6 +13,8 @@
   ],
   "scripts": {
     "dev:client": "yarn workspace @yoasobi/client start",
-    "dev:server": "yarn workspace @yoasobi/server start:dev"
+    "dev:server": "yarn workspace @yoasobi/server start:dev",
+    "db:up": "docker compose -f infra/postgres/docker-compose.dev.yml up -d",
+    "db:down": "docker compose -f infra/postgres/docker-compose.dev.yml down"
   }
 }
