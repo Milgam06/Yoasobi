@@ -2,7 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { NotificationModule } from './notification';
+import { PrismaModule } from './prisma';
+import { YoasobiModule } from './yoasobi';
 
 @Module({
   imports: [
@@ -14,7 +15,8 @@ import { NotificationModule } from './notification';
       autoSchemaFile: '/pacakges/shared/graphql/schema.gql',
       playground: false,
     }),
-    NotificationModule,
+    PrismaModule,
+    YoasobiModule,
   ],
 })
 export class AppModule {}

@@ -6,10 +6,35 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
   moduleFormat = "cjs"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+
+enum DayOfWeek {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+model User {
+  id String @id @default(uuid())
+  yoasobi Yoasobi[]
+}
+
+model Yoasobi {
+  id String @id @default(uuid())
+  user User @relation(fields: [userId], references: [id])
+  userId String
+  dayOfWeek DayOfWeek 
+  yoasobiDate DateTime
+  createdAt DateTime @default(now())
 }
