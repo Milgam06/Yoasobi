@@ -20,8 +20,18 @@ export type YoasobiModel = runtime.Types.Result.DefaultSelection<Prisma.$Yoasobi
 
 export type AggregateYoasobi = {
   _count: YoasobiCountAggregateOutputType | null
+  _avg: YoasobiAvgAggregateOutputType | null
+  _sum: YoasobiSumAggregateOutputType | null
   _min: YoasobiMinAggregateOutputType | null
   _max: YoasobiMaxAggregateOutputType | null
+}
+
+export type YoasobiAvgAggregateOutputType = {
+  duration: number | null
+}
+
+export type YoasobiSumAggregateOutputType = {
+  duration: number | null
 }
 
 export type YoasobiMinAggregateOutputType = {
@@ -29,6 +39,9 @@ export type YoasobiMinAggregateOutputType = {
   userId: string | null
   dayOfWeek: $Enums.DayOfWeek | null
   yoasobiDate: Date | null
+  weekStartDate: Date | null
+  alarmTime: Date | null
+  duration: number | null
   createdAt: Date | null
 }
 
@@ -37,6 +50,9 @@ export type YoasobiMaxAggregateOutputType = {
   userId: string | null
   dayOfWeek: $Enums.DayOfWeek | null
   yoasobiDate: Date | null
+  weekStartDate: Date | null
+  alarmTime: Date | null
+  duration: number | null
   createdAt: Date | null
 }
 
@@ -45,16 +61,30 @@ export type YoasobiCountAggregateOutputType = {
   userId: number
   dayOfWeek: number
   yoasobiDate: number
+  weekStartDate: number
+  alarmTime: number
+  duration: number
   createdAt: number
   _all: number
 }
 
+
+export type YoasobiAvgAggregateInputType = {
+  duration?: true
+}
+
+export type YoasobiSumAggregateInputType = {
+  duration?: true
+}
 
 export type YoasobiMinAggregateInputType = {
   id?: true
   userId?: true
   dayOfWeek?: true
   yoasobiDate?: true
+  weekStartDate?: true
+  alarmTime?: true
+  duration?: true
   createdAt?: true
 }
 
@@ -63,6 +93,9 @@ export type YoasobiMaxAggregateInputType = {
   userId?: true
   dayOfWeek?: true
   yoasobiDate?: true
+  weekStartDate?: true
+  alarmTime?: true
+  duration?: true
   createdAt?: true
 }
 
@@ -71,6 +104,9 @@ export type YoasobiCountAggregateInputType = {
   userId?: true
   dayOfWeek?: true
   yoasobiDate?: true
+  weekStartDate?: true
+  alarmTime?: true
+  duration?: true
   createdAt?: true
   _all?: true
 }
@@ -113,6 +149,18 @@ export type YoasobiAggregateArgs<ExtArgs extends runtime.Types.Extensions.Intern
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: YoasobiAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: YoasobiSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: YoasobiMinAggregateInputType
@@ -143,6 +191,8 @@ export type YoasobiGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   _count?: YoasobiCountAggregateInputType | true
+  _avg?: YoasobiAvgAggregateInputType
+  _sum?: YoasobiSumAggregateInputType
   _min?: YoasobiMinAggregateInputType
   _max?: YoasobiMaxAggregateInputType
 }
@@ -152,8 +202,13 @@ export type YoasobiGroupByOutputType = {
   userId: string
   dayOfWeek: $Enums.DayOfWeek
   yoasobiDate: Date
+  weekStartDate: Date
+  alarmTime: Date
+  duration: number
   createdAt: Date
   _count: YoasobiCountAggregateOutputType | null
+  _avg: YoasobiAvgAggregateOutputType | null
+  _sum: YoasobiSumAggregateOutputType | null
   _min: YoasobiMinAggregateOutputType | null
   _max: YoasobiMaxAggregateOutputType | null
 }
@@ -181,8 +236,12 @@ export type YoasobiWhereInput = {
   userId?: Prisma.StringFilter<"Yoasobi"> | string
   dayOfWeek?: Prisma.EnumDayOfWeekFilter<"Yoasobi"> | $Enums.DayOfWeek
   yoasobiDate?: Prisma.DateTimeFilter<"Yoasobi"> | Date | string
+  weekStartDate?: Prisma.DateTimeFilter<"Yoasobi"> | Date | string
+  alarmTime?: Prisma.DateTimeFilter<"Yoasobi"> | Date | string
+  duration?: Prisma.IntFilter<"Yoasobi"> | number
   createdAt?: Prisma.DateTimeFilter<"Yoasobi"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  history?: Prisma.XOR<Prisma.HistoryNullableScalarRelationFilter, Prisma.HistoryWhereInput> | null
 }
 
 export type YoasobiOrderByWithRelationInput = {
@@ -190,31 +249,45 @@ export type YoasobiOrderByWithRelationInput = {
   userId?: Prisma.SortOrder
   dayOfWeek?: Prisma.SortOrder
   yoasobiDate?: Prisma.SortOrder
+  weekStartDate?: Prisma.SortOrder
+  alarmTime?: Prisma.SortOrder
+  duration?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
+  history?: Prisma.HistoryOrderByWithRelationInput
 }
 
 export type YoasobiWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  userId_weekStartDate?: Prisma.YoasobiUserIdWeekStartDateCompoundUniqueInput
   AND?: Prisma.YoasobiWhereInput | Prisma.YoasobiWhereInput[]
   OR?: Prisma.YoasobiWhereInput[]
   NOT?: Prisma.YoasobiWhereInput | Prisma.YoasobiWhereInput[]
   userId?: Prisma.StringFilter<"Yoasobi"> | string
   dayOfWeek?: Prisma.EnumDayOfWeekFilter<"Yoasobi"> | $Enums.DayOfWeek
   yoasobiDate?: Prisma.DateTimeFilter<"Yoasobi"> | Date | string
+  weekStartDate?: Prisma.DateTimeFilter<"Yoasobi"> | Date | string
+  alarmTime?: Prisma.DateTimeFilter<"Yoasobi"> | Date | string
+  duration?: Prisma.IntFilter<"Yoasobi"> | number
   createdAt?: Prisma.DateTimeFilter<"Yoasobi"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-}, "id">
+  history?: Prisma.XOR<Prisma.HistoryNullableScalarRelationFilter, Prisma.HistoryWhereInput> | null
+}, "id" | "userId_weekStartDate">
 
 export type YoasobiOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   dayOfWeek?: Prisma.SortOrder
   yoasobiDate?: Prisma.SortOrder
+  weekStartDate?: Prisma.SortOrder
+  alarmTime?: Prisma.SortOrder
+  duration?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.YoasobiCountOrderByAggregateInput
+  _avg?: Prisma.YoasobiAvgOrderByAggregateInput
   _max?: Prisma.YoasobiMaxOrderByAggregateInput
   _min?: Prisma.YoasobiMinOrderByAggregateInput
+  _sum?: Prisma.YoasobiSumOrderByAggregateInput
 }
 
 export type YoasobiScalarWhereWithAggregatesInput = {
@@ -225,6 +298,9 @@ export type YoasobiScalarWhereWithAggregatesInput = {
   userId?: Prisma.StringWithAggregatesFilter<"Yoasobi"> | string
   dayOfWeek?: Prisma.EnumDayOfWeekWithAggregatesFilter<"Yoasobi"> | $Enums.DayOfWeek
   yoasobiDate?: Prisma.DateTimeWithAggregatesFilter<"Yoasobi"> | Date | string
+  weekStartDate?: Prisma.DateTimeWithAggregatesFilter<"Yoasobi"> | Date | string
+  alarmTime?: Prisma.DateTimeWithAggregatesFilter<"Yoasobi"> | Date | string
+  duration?: Prisma.IntWithAggregatesFilter<"Yoasobi"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Yoasobi"> | Date | string
 }
 
@@ -232,8 +308,12 @@ export type YoasobiCreateInput = {
   id?: string
   dayOfWeek: $Enums.DayOfWeek
   yoasobiDate: Date | string
+  weekStartDate: Date | string
+  alarmTime: Date | string
+  duration: number
   createdAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutYoasobiInput
+  history?: Prisma.HistoryCreateNestedOneWithoutYoasobiInput
 }
 
 export type YoasobiUncheckedCreateInput = {
@@ -241,15 +321,23 @@ export type YoasobiUncheckedCreateInput = {
   userId: string
   dayOfWeek: $Enums.DayOfWeek
   yoasobiDate: Date | string
+  weekStartDate: Date | string
+  alarmTime: Date | string
+  duration: number
   createdAt?: Date | string
+  history?: Prisma.HistoryUncheckedCreateNestedOneWithoutYoasobiInput
 }
 
 export type YoasobiUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   yoasobiDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  weekStartDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  alarmTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duration?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutYoasobiNestedInput
+  history?: Prisma.HistoryUpdateOneWithoutYoasobiNestedInput
 }
 
 export type YoasobiUncheckedUpdateInput = {
@@ -257,7 +345,11 @@ export type YoasobiUncheckedUpdateInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   yoasobiDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  weekStartDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  alarmTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duration?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  history?: Prisma.HistoryUncheckedUpdateOneWithoutYoasobiNestedInput
 }
 
 export type YoasobiCreateManyInput = {
@@ -265,6 +357,9 @@ export type YoasobiCreateManyInput = {
   userId: string
   dayOfWeek: $Enums.DayOfWeek
   yoasobiDate: Date | string
+  weekStartDate: Date | string
+  alarmTime: Date | string
+  duration: number
   createdAt?: Date | string
 }
 
@@ -272,6 +367,9 @@ export type YoasobiUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   yoasobiDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  weekStartDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  alarmTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duration?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -280,6 +378,9 @@ export type YoasobiUncheckedUpdateManyInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   yoasobiDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  weekStartDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  alarmTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duration?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -293,12 +394,24 @@ export type YoasobiOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type YoasobiUserIdWeekStartDateCompoundUniqueInput = {
+  userId: string
+  weekStartDate: Date | string
+}
+
 export type YoasobiCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   dayOfWeek?: Prisma.SortOrder
   yoasobiDate?: Prisma.SortOrder
+  weekStartDate?: Prisma.SortOrder
+  alarmTime?: Prisma.SortOrder
+  duration?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type YoasobiAvgOrderByAggregateInput = {
+  duration?: Prisma.SortOrder
 }
 
 export type YoasobiMaxOrderByAggregateInput = {
@@ -306,6 +419,9 @@ export type YoasobiMaxOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   dayOfWeek?: Prisma.SortOrder
   yoasobiDate?: Prisma.SortOrder
+  weekStartDate?: Prisma.SortOrder
+  alarmTime?: Prisma.SortOrder
+  duration?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -314,7 +430,19 @@ export type YoasobiMinOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   dayOfWeek?: Prisma.SortOrder
   yoasobiDate?: Prisma.SortOrder
+  weekStartDate?: Prisma.SortOrder
+  alarmTime?: Prisma.SortOrder
+  duration?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type YoasobiSumOrderByAggregateInput = {
+  duration?: Prisma.SortOrder
+}
+
+export type YoasobiScalarRelationFilter = {
+  is?: Prisma.YoasobiWhereInput
+  isNot?: Prisma.YoasobiWhereInput
 }
 
 export type YoasobiCreateNestedManyWithoutUserInput = {
@@ -363,22 +491,48 @@ export type EnumDayOfWeekFieldUpdateOperationsInput = {
   set?: $Enums.DayOfWeek
 }
 
-export type DateTimeFieldUpdateOperationsInput = {
-  set?: Date | string
+export type IntFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type YoasobiCreateNestedOneWithoutHistoryInput = {
+  create?: Prisma.XOR<Prisma.YoasobiCreateWithoutHistoryInput, Prisma.YoasobiUncheckedCreateWithoutHistoryInput>
+  connectOrCreate?: Prisma.YoasobiCreateOrConnectWithoutHistoryInput
+  connect?: Prisma.YoasobiWhereUniqueInput
+}
+
+export type YoasobiUpdateOneRequiredWithoutHistoryNestedInput = {
+  create?: Prisma.XOR<Prisma.YoasobiCreateWithoutHistoryInput, Prisma.YoasobiUncheckedCreateWithoutHistoryInput>
+  connectOrCreate?: Prisma.YoasobiCreateOrConnectWithoutHistoryInput
+  upsert?: Prisma.YoasobiUpsertWithoutHistoryInput
+  connect?: Prisma.YoasobiWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.YoasobiUpdateToOneWithWhereWithoutHistoryInput, Prisma.YoasobiUpdateWithoutHistoryInput>, Prisma.YoasobiUncheckedUpdateWithoutHistoryInput>
 }
 
 export type YoasobiCreateWithoutUserInput = {
   id?: string
   dayOfWeek: $Enums.DayOfWeek
   yoasobiDate: Date | string
+  weekStartDate: Date | string
+  alarmTime: Date | string
+  duration: number
   createdAt?: Date | string
+  history?: Prisma.HistoryCreateNestedOneWithoutYoasobiInput
 }
 
 export type YoasobiUncheckedCreateWithoutUserInput = {
   id?: string
   dayOfWeek: $Enums.DayOfWeek
   yoasobiDate: Date | string
+  weekStartDate: Date | string
+  alarmTime: Date | string
+  duration: number
   createdAt?: Date | string
+  history?: Prisma.HistoryUncheckedCreateNestedOneWithoutYoasobiInput
 }
 
 export type YoasobiCreateOrConnectWithoutUserInput = {
@@ -415,13 +569,79 @@ export type YoasobiScalarWhereInput = {
   userId?: Prisma.StringFilter<"Yoasobi"> | string
   dayOfWeek?: Prisma.EnumDayOfWeekFilter<"Yoasobi"> | $Enums.DayOfWeek
   yoasobiDate?: Prisma.DateTimeFilter<"Yoasobi"> | Date | string
+  weekStartDate?: Prisma.DateTimeFilter<"Yoasobi"> | Date | string
+  alarmTime?: Prisma.DateTimeFilter<"Yoasobi"> | Date | string
+  duration?: Prisma.IntFilter<"Yoasobi"> | number
   createdAt?: Prisma.DateTimeFilter<"Yoasobi"> | Date | string
+}
+
+export type YoasobiCreateWithoutHistoryInput = {
+  id?: string
+  dayOfWeek: $Enums.DayOfWeek
+  yoasobiDate: Date | string
+  weekStartDate: Date | string
+  alarmTime: Date | string
+  duration: number
+  createdAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutYoasobiInput
+}
+
+export type YoasobiUncheckedCreateWithoutHistoryInput = {
+  id?: string
+  userId: string
+  dayOfWeek: $Enums.DayOfWeek
+  yoasobiDate: Date | string
+  weekStartDate: Date | string
+  alarmTime: Date | string
+  duration: number
+  createdAt?: Date | string
+}
+
+export type YoasobiCreateOrConnectWithoutHistoryInput = {
+  where: Prisma.YoasobiWhereUniqueInput
+  create: Prisma.XOR<Prisma.YoasobiCreateWithoutHistoryInput, Prisma.YoasobiUncheckedCreateWithoutHistoryInput>
+}
+
+export type YoasobiUpsertWithoutHistoryInput = {
+  update: Prisma.XOR<Prisma.YoasobiUpdateWithoutHistoryInput, Prisma.YoasobiUncheckedUpdateWithoutHistoryInput>
+  create: Prisma.XOR<Prisma.YoasobiCreateWithoutHistoryInput, Prisma.YoasobiUncheckedCreateWithoutHistoryInput>
+  where?: Prisma.YoasobiWhereInput
+}
+
+export type YoasobiUpdateToOneWithWhereWithoutHistoryInput = {
+  where?: Prisma.YoasobiWhereInput
+  data: Prisma.XOR<Prisma.YoasobiUpdateWithoutHistoryInput, Prisma.YoasobiUncheckedUpdateWithoutHistoryInput>
+}
+
+export type YoasobiUpdateWithoutHistoryInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
+  yoasobiDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  weekStartDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  alarmTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duration?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutYoasobiNestedInput
+}
+
+export type YoasobiUncheckedUpdateWithoutHistoryInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
+  yoasobiDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  weekStartDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  alarmTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duration?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type YoasobiCreateManyUserInput = {
   id?: string
   dayOfWeek: $Enums.DayOfWeek
   yoasobiDate: Date | string
+  weekStartDate: Date | string
+  alarmTime: Date | string
+  duration: number
   createdAt?: Date | string
 }
 
@@ -429,20 +649,31 @@ export type YoasobiUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   yoasobiDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  weekStartDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  alarmTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duration?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  history?: Prisma.HistoryUpdateOneWithoutYoasobiNestedInput
 }
 
 export type YoasobiUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   yoasobiDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  weekStartDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  alarmTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duration?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  history?: Prisma.HistoryUncheckedUpdateOneWithoutYoasobiNestedInput
 }
 
 export type YoasobiUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   dayOfWeek?: Prisma.EnumDayOfWeekFieldUpdateOperationsInput | $Enums.DayOfWeek
   yoasobiDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  weekStartDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  alarmTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duration?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -453,8 +684,12 @@ export type YoasobiSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   userId?: boolean
   dayOfWeek?: boolean
   yoasobiDate?: boolean
+  weekStartDate?: boolean
+  alarmTime?: boolean
+  duration?: boolean
   createdAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  history?: boolean | Prisma.Yoasobi$historyArgs<ExtArgs>
 }, ExtArgs["result"]["yoasobi"]>
 
 export type YoasobiSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -462,6 +697,9 @@ export type YoasobiSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   userId?: boolean
   dayOfWeek?: boolean
   yoasobiDate?: boolean
+  weekStartDate?: boolean
+  alarmTime?: boolean
+  duration?: boolean
   createdAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["yoasobi"]>
@@ -471,6 +709,9 @@ export type YoasobiSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   userId?: boolean
   dayOfWeek?: boolean
   yoasobiDate?: boolean
+  weekStartDate?: boolean
+  alarmTime?: boolean
+  duration?: boolean
   createdAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["yoasobi"]>
@@ -480,12 +721,16 @@ export type YoasobiSelectScalar = {
   userId?: boolean
   dayOfWeek?: boolean
   yoasobiDate?: boolean
+  weekStartDate?: boolean
+  alarmTime?: boolean
+  duration?: boolean
   createdAt?: boolean
 }
 
-export type YoasobiOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "dayOfWeek" | "yoasobiDate" | "createdAt", ExtArgs["result"]["yoasobi"]>
+export type YoasobiOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "dayOfWeek" | "yoasobiDate" | "weekStartDate" | "alarmTime" | "duration" | "createdAt", ExtArgs["result"]["yoasobi"]>
 export type YoasobiInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  history?: boolean | Prisma.Yoasobi$historyArgs<ExtArgs>
 }
 export type YoasobiIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -498,12 +743,16 @@ export type $YoasobiPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   name: "Yoasobi"
   objects: {
     user: Prisma.$UserPayload<ExtArgs>
+    history: Prisma.$HistoryPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     userId: string
     dayOfWeek: $Enums.DayOfWeek
     yoasobiDate: Date
+    weekStartDate: Date
+    alarmTime: Date
+    duration: number
     createdAt: Date
   }, ExtArgs["result"]["yoasobi"]>
   composites: {}
@@ -900,6 +1149,7 @@ readonly fields: YoasobiFieldRefs;
 export interface Prisma__YoasobiClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  history<T extends Prisma.Yoasobi$historyArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Yoasobi$historyArgs<ExtArgs>>): Prisma.Prisma__HistoryClient<runtime.Types.Result.GetResult<Prisma.$HistoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -933,6 +1183,9 @@ export interface YoasobiFieldRefs {
   readonly userId: Prisma.FieldRef<"Yoasobi", 'String'>
   readonly dayOfWeek: Prisma.FieldRef<"Yoasobi", 'DayOfWeek'>
   readonly yoasobiDate: Prisma.FieldRef<"Yoasobi", 'DateTime'>
+  readonly weekStartDate: Prisma.FieldRef<"Yoasobi", 'DateTime'>
+  readonly alarmTime: Prisma.FieldRef<"Yoasobi", 'DateTime'>
+  readonly duration: Prisma.FieldRef<"Yoasobi", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Yoasobi", 'DateTime'>
 }
     
@@ -1327,6 +1580,25 @@ export type YoasobiDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * Limit how many Yoasobis to delete.
    */
   limit?: number
+}
+
+/**
+ * Yoasobi.history
+ */
+export type Yoasobi$historyArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the History
+   */
+  select?: Prisma.HistorySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the History
+   */
+  omit?: Prisma.HistoryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.HistoryInclude<ExtArgs> | null
+  where?: Prisma.HistoryWhereInput
 }
 
 /**

@@ -10,4 +10,5 @@
  */
 export type * from './models/User'
 export type * from './models/Yoasobi'
+export type * from './models/History'
 export type * from './commonInputTypes'

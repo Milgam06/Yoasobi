@@ -47,3 +47,8 @@ export type User = Prisma.UserModel
  * 
  */
 export type Yoasobi = Prisma.YoasobiModel
+/**
+ * Model History
+ * 
+ */
+export type History = Prisma.HistoryModel

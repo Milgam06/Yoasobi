@@ -52,7 +52,8 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   User: 'User',
-  Yoasobi: 'Yoasobi'
+  Yoasobi: 'Yoasobi',
+  History: 'History'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -72,7 +73,11 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 
 
 export const UserScalarFieldEnum = {
-  id: 'id'
+  id: 'id',
+  name: 'name',
+  timezone: 'timezone',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -83,10 +88,25 @@ export const YoasobiScalarFieldEnum = {
   userId: 'userId',
   dayOfWeek: 'dayOfWeek',
   yoasobiDate: 'yoasobiDate',
+  weekStartDate: 'weekStartDate',
+  alarmTime: 'alarmTime',
+  duration: 'duration',
   createdAt: 'createdAt'
 } as const
 
 export type YoasobiScalarFieldEnum = (typeof YoasobiScalarFieldEnum)[keyof typeof YoasobiScalarFieldEnum]
+
+
+export const HistoryScalarFieldEnum = {
+  id: 'id',
+  yoasobiId: 'yoasobiId',
+  userId: 'userId',
+  note: 'note',
+  image: 'image',
+  createdAt: 'createdAt'
+} as const
+
+export type HistoryScalarFieldEnum = (typeof HistoryScalarFieldEnum)[keyof typeof HistoryScalarFieldEnum]
 
 
 export const SortOrder = {

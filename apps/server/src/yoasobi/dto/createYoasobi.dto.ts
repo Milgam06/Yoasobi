@@ -1,7 +1,7 @@
 import { DayOfWeek } from '@generated-prisma/enums';
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { IsDate, IsEnum, IsUUID } from 'class-validator';
-import { YoasobiDto } from 'dto';
+import { YoasobiEntity } from 'entity';
 
 @InputType()
 export class CreateYoasobiInputDto {
@@ -20,6 +20,6 @@ export class CreateYoasobiInputDto {
 
 @ObjectType()
 export class CreateYoasobiOutputDto {
-  @Field(() => YoasobiDto)
-  yoasobi: YoasobiDto;
+  @Field(() => YoasobiEntity)
+  yoasobi: YoasobiEntity;
 }
