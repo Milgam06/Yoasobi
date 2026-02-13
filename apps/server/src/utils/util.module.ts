@@ -4,5 +4,5 @@ import * as UtilServices from './services';
 const Services = Object.values(UtilServices);
 
 @Global()
-@Module({ providers: [...Services] })
+@Module({ providers: [...Services], exports: [...Services] })
 export class UtilModule {}
