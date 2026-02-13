@@ -4,6 +4,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { PrismaModule } from './prisma';
 import { YoasobiModule } from './yoasobi';
+import { UtilModule } from './utils';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { YoasobiModule } from './yoasobi';
       playground: false,
     }),
     PrismaModule,
+    UtilModule,
     YoasobiModule,
   ],
 })
