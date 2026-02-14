@@ -13,8 +13,11 @@ import {
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { hideAsync, preventAutoHideAsync } from 'expo-splash-screen';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useDidUpdate } from 'rooks';
 import { TamaguiProvider } from 'tamagui';
+import { ApolloProvider } from '@apollo/client/react';
+import { apolloClient } from '@/libs';
 
 preventAutoHideAsync();
 
@@ -44,8 +47,12 @@ export default function RootLayout() {
   }
 
   return (
-    <TamaguiProvider config={config}>
-      <Stack screenOptions={{ headerShown: false }} />
-    </TamaguiProvider>
+    <ApolloProvider client={apolloClient}>
+      <SafeAreaProvider>
+        <TamaguiProvider config={config}>
+          <Stack screenOptions={{ headerShown: false }} />
+        </TamaguiProvider>
+      </SafeAreaProvider>
+    </ApolloProvider>
   );
 }

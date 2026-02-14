@@ -8,9 +8,11 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "codegen": "graphql-codegen"
   },
   "dependencies": {
+    "@apollo/client": "^4.1.4",
     "@expo-google-fonts/noto-sans": "^0.4.2",
     "@expo/vector-icons": "^15.0.3",
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
@@ -48,6 +50,10 @@
     "tamagui": "^1.144.3"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^6.1.0",
+    "@graphql-codegen/typescript": "^5.0.6",
+    "@graphql-codegen/typescript-operations": "^5.0.6",
+    "@graphql-codegen/typescript-react-apollo": "^4.3.3",
     "@tamagui/babel-plugin": "^1.144.3",
     "@types/react": "~19.1.0",
     "eslint": "^9.25.0",
