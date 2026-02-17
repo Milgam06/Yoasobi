@@ -15,6 +15,6 @@ export class GetYoasobiInputDto {
 
 @ObjectType()
 export class GetYoasobiOutputDto {
-  @Field(() => YoasobiEntity)
-  yoasobi: YoasobiEntity;
+  @Field(() => YoasobiEntity, { nullable: true })
+  yoasobi: YoasobiEntity | null;
 }
