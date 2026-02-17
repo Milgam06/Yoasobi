@@ -1,0 +1,12 @@
+query getWeeklyYoasobi($input: GetYoasobiInputDto!) {
+  getYoasobi(input: $input) {
+    yoasobi {
+      id
+      yoasobiDate
+      dayOfWeek
+      alarmTime
+      duration
+      createdAt
+    }
+  }
+}

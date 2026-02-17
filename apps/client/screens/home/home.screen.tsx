@@ -1,45 +1,77 @@
 import { BlurBox, DefaultLayout } from '@/components';
+import { DAY_OF_WEEK_ARRAY, DAY_OF_WEEK_TEXT } from '@/constants';
+import { DayOfWeek, useGetWeeklyYoasobiLazyQuery } from '@/libs';
+import { getWeekStartDateUtil } from '@/utils';
 import { faAlarmClock } from '@fortawesome/free-solid-svg-icons/faAlarmClock';
 import { faBell } from '@fortawesome/free-solid-svg-icons/faBell';
 import { faBurst } from '@fortawesome/free-solid-svg-icons/faBurst';
 import { faMoon } from '@fortawesome/free-solid-svg-icons/faMoon';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
+import { useDidMount } from 'rooks';
 import { Button, ColorTokens, Progress, Stack, Switch, Text } from 'tamagui';
 
-enum DayOfWeek {
-  MONDAY = '월',
-  TUESDAY = '화',
-  WEDNESDAY = '수',
-  THURSDAY = '목',
-  FRIDAY = '금',
-  SATURDAY = '토',
-  SUNDAY = '일',
-}
+type IYoasobi = {
+  id: string;
+  yoasobiDate: Date;
+  dayOfWeek: DayOfWeek;
+  alarmTime: Date;
+  duration: number;
+  createdAt: Date;
+};
 
 type IYoasobiResultBoxProps = {
   yoasobiDay: DayOfWeek;
-  yoasobiTime: Date;
-  choiceDate: Date;
+  yoasobiDate: Date;
+  createdDate: Date;
 };
 
 export const HomeScreen = memo(() => {
   const [isMidnightNotificationEnabled, setIsMidnightNotificationEnabled] = useState<boolean>(false);
-  const [selectedDay, setSelectedDay] = useState<DayOfWeek>(DayOfWeek.SUNDAY);
+  const [yoasobi, setYoasobi] = useState<IYoasobi | null>(null);
+  const [selectedDay, setSelectedDay] = useState<DayOfWeek>(DayOfWeek.Sunday);
+  const [getWeeklyYoasobiQuery, { loading, error }] = useGetWeeklyYoasobiLazyQuery();
+
+  const { weekStartDate } = useMemo(() => {
+    const currentDate = new Date();
+    const { weekStartDate } = getWeekStartDateUtil({ currentDate });
+    return { weekStartDate };
+  }, []);
 
   const handlePressDay = useCallback((day: DayOfWeek) => {
     setSelectedDay(day);
   }, []);
 
-  const handlePressRandomDay = useCallback(() => {
-    const randomIndex = Math.floor(Math.random() * Object.values(DayOfWeek).length);
-    const selectedRandomDay = Object.values(DayOfWeek)[randomIndex];
-    setSelectedDay(selectedRandomDay);
-  }, []);
-
   const handleCheckMidnightNotification = useCallback((checked: boolean) => {
     setIsMidnightNotificationEnabled(checked);
   }, []);
+
+  const handlePressRandomDay = useCallback(() => {
+    const randomIndex = Math.floor(Math.random() * DAY_OF_WEEK_ARRAY.length);
+    console.log(DAY_OF_WEEK_ARRAY[randomIndex], 'asdf');
+    const selectedRandomDay = DAY_OF_WEEK_ARRAY[randomIndex];
+    setSelectedDay(selectedRandomDay);
+  }, []);
+
+  const fetchWeeklyYoasobi = useCallback(async () => {
+    const { data } = await getWeeklyYoasobiQuery({
+      variables: {
+        input: {
+          userId: 'currentUserId',
+          weekStartDate,
+        },
+      },
+    });
+    const yoasobi = data?.getYoasobi.yoasobi;
+    if (!yoasobi) {
+      return;
+    }
+    setYoasobi(yoasobi);
+  }, [getWeeklyYoasobiQuery, weekStartDate]);
+
+  useDidMount(async () => {
+    await fetchWeeklyYoasobi();
+  });
 
   const YoasobiChoiceBox = memo(() => {
     return (
@@ -55,7 +87,7 @@ export const HomeScreen = memo(() => {
           </Stack>
           <Stack width="$fluid" justify="center" gap="$size.x3">
             <Stack width="$fluid" flexDirection="row" justify="space-between" items="center" pt="$size.x2">
-              {Object.values(DayOfWeek).map((day) => {
+              {DAY_OF_WEEK_ARRAY.map((day) => {
                 const isDayActive = day === selectedDay;
                 const backgroundColor: ColorTokens = isDayActive ? '$colors.moonSoftWhite' : '$colors.midnightPurple';
                 const fontColor: ColorTokens = isDayActive ? '$colors.midnightPurple' : '$colors.moonSoftWhite';
@@ -75,7 +107,7 @@ export const HomeScreen = memo(() => {
                     pressStyle={{ opacity: 0.6 }}
                     onPress={() => handlePressDay(day)}>
                     <Text fontSize="$7" fontWeight="$900" color={fontColor}>
-                      {day}
+                      {DAY_OF_WEEK_TEXT[day]}
                     </Text>
                   </Stack>
                 );
@@ -169,22 +201,22 @@ export const HomeScreen = memo(() => {
   });
   YoasobiChoiceBox.displayName = 'YoasobiChoiceBox';
 
-  const YoasobiResultBox = memo<IYoasobiResultBoxProps>(({ yoasobiDay, yoasobiTime, choiceDate }) => {
+  const YoasobiResultBox = memo<IYoasobiResultBoxProps>(({ yoasobiDay, yoasobiDate, createdDate }) => {
     const MS_PER_DAY = 1000 * 60 * 60 * 24;
-    const yoasobiTimeText = `${yoasobiTime.getHours()}:${yoasobiTime.getMinutes().toString().padStart(2, '0')}`;
+    const yoasobiDateText = `${yoasobiDate.getHours()}:${yoasobiDate.getMinutes().toString().padStart(2, '0')}`;
 
     const now = new Date();
     const nowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    const yoasobiStart = new Date(yoasobiTime.getFullYear(), yoasobiTime.getMonth(), yoasobiTime.getDate()).getTime();
+    const yoasobiStart = new Date(yoasobiDate.getFullYear(), yoasobiDate.getMonth(), yoasobiDate.getDate()).getTime();
     const remainingDays = Math.max(0, Math.ceil((yoasobiStart - nowStart) / MS_PER_DAY));
     const isDday = remainingDays <= 0;
     const ddayText = isDday ? 'D-DAY' : `D-${remainingDays}`;
 
     const nowDateTime = now.getTime();
-    const yoasobiDateTime = yoasobiTime.getTime();
-    const choiceDateTime = choiceDate.getTime();
-    const totalDuration = yoasobiDateTime - choiceDateTime;
-    const elapsedTime = Math.max(0, Math.min(totalDuration, nowDateTime - choiceDateTime));
+    const yoasobiDateTime = yoasobiDate.getTime();
+    const createdDateTime = createdDate.getTime();
+    const totalDuration = yoasobiDateTime - createdDateTime;
+    const elapsedTime = Math.max(0, Math.min(totalDuration, nowDateTime - createdDateTime));
     const elapsedProgress = totalDuration > 0 ? Math.round((elapsedTime / totalDuration) * 100) : 0;
     return (
       <BlurBox>
@@ -195,10 +227,10 @@ export const HomeScreen = memo(() => {
                 Your YOASOBI day
               </Text>
               <Text fontSize="$9" fontWeight="$900" color="$colors.moonSoftWhite">
-                {yoasobiDay}요일
+                {DAY_OF_WEEK_TEXT[yoasobiDay]}요일
               </Text>
               <Text fontSize="$6" fontWeight="$400" color="$colors.moonSoftWhite">
-                {yoasobiTimeText} 알림
+                {yoasobiDateText} 알림
               </Text>
             </Stack>
             <Stack
@@ -278,11 +310,15 @@ export const HomeScreen = memo(() => {
             새벽 산책 해볼까요?
           </Text>
         </Stack>
-        <YoasobiResultBox
-          yoasobiDay={DayOfWeek.FRIDAY}
-          yoasobiTime={new Date('2026-01-30')}
-          choiceDate={new Date('2026-01-22')}
-        />
+        {yoasobi ? (
+          <YoasobiResultBox
+            yoasobiDay={yoasobi.dayOfWeek}
+            yoasobiDate={yoasobi.yoasobiDate}
+            createdDate={yoasobi.createdAt}
+          />
+        ) : (
+          <YoasobiChoiceBox />
+        )}
       </Stack>
     </DefaultLayout>
   );
