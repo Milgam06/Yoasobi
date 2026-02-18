@@ -9,7 +9,7 @@ import { faMoon } from '@fortawesome/free-solid-svg-icons/faMoon';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { useDidMount } from 'rooks';
-import { Button, ColorTokens, Progress, Stack, Switch, Text } from 'tamagui';
+import { Button, ColorTokens, Progress, ScrollView, Stack, Switch, Text } from 'tamagui';
 
 type IYoasobi = {
   id: string;
@@ -38,7 +38,7 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
   ({ selectedDay, isMidnightNotificationEnabled, onPressDay, onPressRandomDay, onCheckMidnightNotification }) => {
     return (
       <BlurBox>
-        <Stack width="$fluid" justify="center" items="center" gap="$size.x7">
+        <Stack width="$fluid" justify="center" items="center" gap="$size.x5">
           <Stack width="$fluid" justify="center" gap="$size.x1">
             <Text fontSize="$5" color="$colors.cloudGray">
               Weekly Pick
@@ -75,7 +75,6 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
                 );
               })}
             </Stack>
-
             <Stack
               width="$fluid"
               flexDirection="row"
@@ -137,7 +136,7 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
               opacity: 0.8,
             }}>
             <Text fontSize="$8" fontWeight="$600" color="$colors.moonSoftWhite">
-              YOASOBI
+              생성
             </Text>
           </Button>
         </Stack>
@@ -249,7 +248,7 @@ export const HomeScreen = memo(() => {
   const [isMidnightNotificationEnabled, setIsMidnightNotificationEnabled] = useState<boolean>(false);
   const [yoasobi, setYoasobi] = useState<IYoasobi | null>(null);
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>(DayOfWeek.Sunday);
-  const [getWeeklyYoasobiQuery, { loading, error }] = useGetWeeklyYoasobiLazyQuery();
+  const [getWeeklyYoasobiQuery] = useGetWeeklyYoasobiLazyQuery();
 
   const { weekStartDate } = useMemo(() => {
     const currentDate = new Date();
@@ -294,31 +293,33 @@ export const HomeScreen = memo(() => {
 
   return (
     <DefaultLayout isBlur hasHeader>
-      <Stack flex={1} gap="$size.x4">
-        <Stack pt="$size.x4" gap="$size.x1_5">
-          <Text fontSize="$7" fontWeight="$500" color="$colors.cloudGray">
-            이번주 YOASOBI 를 정해요!
-          </Text>
-          <Text fontSize="$9" fontWeight="$700" color="$colors.moonSoftWhite">
-            새벽 산책 해볼까요?
-          </Text>
+      <ScrollView>
+        <Stack flex={1} gap="$size.x4">
+          <Stack pt="$size.x4" gap="$size.x1_5">
+            <Text fontSize="$7" fontWeight="$500" color="$colors.cloudGray">
+              이번주 YOASOBI 를 정해요!
+            </Text>
+            <Text fontSize="$9" fontWeight="$700" color="$colors.moonSoftWhite">
+              새벽 산책 해볼까요?
+            </Text>
+          </Stack>
+          {yoasobi ? (
+            <YoasobiResultBox
+              yoasobiDay={yoasobi.dayOfWeek}
+              yoasobiDate={yoasobi.yoasobiDate}
+              createdDate={yoasobi.createdAt}
+            />
+          ) : (
+            <YoasobiChoiceBox
+              selectedDay={selectedDay}
+              isMidnightNotificationEnabled={isMidnightNotificationEnabled}
+              onPressDay={handlePressDay}
+              onPressRandomDay={handlePressRandomDay}
+              onCheckMidnightNotification={handleCheckMidnightNotification}
+            />
+          )}
         </Stack>
-        {yoasobi ? (
-          <YoasobiResultBox
-            yoasobiDay={yoasobi.dayOfWeek}
-            yoasobiDate={yoasobi.yoasobiDate}
-            createdDate={yoasobi.createdAt}
-          />
-        ) : (
-          <YoasobiChoiceBox
-            selectedDay={selectedDay}
-            isMidnightNotificationEnabled={isMidnightNotificationEnabled}
-            onPressDay={handlePressDay}
-            onPressRandomDay={handlePressRandomDay}
-            onCheckMidnightNotification={handleCheckMidnightNotification}
-          />
-        )}
-      </Stack>
+      </ScrollView>
     </DefaultLayout>
   );
 });
