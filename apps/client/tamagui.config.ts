@@ -16,6 +16,7 @@ const tokens = createTokens({
     x1: 4,
     x1_5: 6,
     x2: 8,
+    x2_5: 10,
     x3: 12,
     x4: 16,
     x5: 20,
