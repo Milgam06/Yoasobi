@@ -26,5 +26,3 @@ export const BlurBox = memo<IBlurBoxProps>(({ children }) => {
     </BlurView>
   );
 });
-
-BlurBox.displayName = 'BlurBox';

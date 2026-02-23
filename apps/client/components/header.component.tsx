@@ -12,5 +12,3 @@ export const Header = memo(() => {
     </Stack>
   );
 });
-
-Header.displayName = 'Header';

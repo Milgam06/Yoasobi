@@ -32,5 +32,3 @@ export const DefaultLayout = memo<IDefaultLayoutProps>(
     );
   },
 );
-
-DefaultLayout.displayName = 'DefaultLayout';

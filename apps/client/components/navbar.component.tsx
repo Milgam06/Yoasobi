@@ -62,5 +62,3 @@ export const Navbar = memo((props: BottomTabBarProps) => {
     </Stack>
   );
 });
-
-Navbar.displayName = 'Navbar';
