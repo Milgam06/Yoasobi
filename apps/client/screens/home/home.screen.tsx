@@ -1,7 +1,7 @@
 import { BlurBox, DefaultLayout } from '@/components';
 import { DAY_OF_WEEK_ARRAY, DAY_OF_WEEK_TEXT } from '@/constants';
 import { DayOfWeek, useGetWeeklyYoasobiLazyQuery } from '@/libs';
-import { getWeekStartDateUtil } from '@/utils';
+import { getDateByDayOfWeekUtil, getWeekStartDateUtil } from '@/utils';
 import { faAlarmClock } from '@fortawesome/free-solid-svg-icons/faAlarmClock';
 import { faBell } from '@fortawesome/free-solid-svg-icons/faBell';
 import { faClock } from '@fortawesome/free-solid-svg-icons/faClock';
@@ -10,8 +10,10 @@ import { faBurst } from '@fortawesome/free-solid-svg-icons/faBurst';
 import { faMoon } from '@fortawesome/free-solid-svg-icons/faMoon';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { memo, useCallback, useMemo, useState } from 'react';
+import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useDidMount } from 'rooks';
-import { Button, ColorTokens, Progress, ScrollView, Separator, Sheet, Stack, Switch, Text } from 'tamagui';
+import { Button, ColorTokens, Input, Progress, ScrollView, Separator, Sheet, Stack, Switch, Text } from 'tamagui';
+import { Platform } from 'react-native';
 
 type IYoasobi = {
   id: string;
@@ -23,16 +25,20 @@ type IYoasobi = {
 };
 
 type IYoasobiChoiceBoxProps = {
-  selectedDay: DayOfWeek;
+  selectedDayOfWeek: DayOfWeek;
   isMidnightNotificationEnabled: boolean;
   isShowStartTime: boolean;
   isShowDuration: boolean;
+  startTimeValue: Date;
+  durationValue: number;
   onPressShowStartTime: () => void;
   onPressShowDuration: () => void;
   onCloseStartTime: () => void;
   onCloseDuration: () => void;
   onPressDay: (day: DayOfWeek) => void;
   onPressRandomDay: () => void;
+  onChangeStartTime: (event: DateTimePickerEvent, date?: Date) => void;
+  onChangeDuration: (duration: string) => void;
   onCheckMidnightNotification: (checked: boolean) => void;
 };
 
@@ -44,10 +50,12 @@ type IYoasobiResultBoxProps = {
 
 const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
   ({
-    selectedDay,
+    selectedDayOfWeek,
     isMidnightNotificationEnabled,
     isShowStartTime,
     isShowDuration,
+    startTimeValue,
+    durationValue,
     onPressShowStartTime,
     onPressShowDuration,
     onCloseStartTime,
@@ -55,7 +63,22 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
     onPressDay,
     onPressRandomDay,
     onCheckMidnightNotification,
+    onChangeStartTime,
+    onChangeDuration,
   }) => {
+    const isPlatformAndroid = Platform.OS === 'android';
+
+    const startTimeText = useMemo(() => {
+      const hours = startTimeValue.getHours().toString().padStart(2, '0');
+      const minutes = startTimeValue.getMinutes().toString().padStart(2, '0');
+      return `${hours} : ${minutes}`;
+    }, [startTimeValue]);
+
+    const durationText = useMemo(() => {
+      const durationMinutes = durationValue.toString().padStart(2, '0');
+      return `${durationMinutes} 분`;
+    }, [durationValue]);
+
     return (
       <BlurBox>
         <Stack width="$fluid" justify="center" items="center" gap="$size.x5">
@@ -70,7 +93,7 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
           <Stack width="$fluid" justify="center" gap="$size.x2_5">
             <Stack width="$fluid" flexDirection="row" justify="space-between" items="center">
               {DAY_OF_WEEK_ARRAY.map((day) => {
-                const isDayActive = day === selectedDay;
+                const isDayActive = day === selectedDayOfWeek;
                 const backgroundColor: ColorTokens = isDayActive ? '$colors.moonSoftWhite' : '$colors.midnightPurple';
                 const fontColor: ColorTokens = isDayActive ? '$colors.midnightPurple' : '$colors.moonSoftWhite';
                 const borderColor: ColorTokens = isDayActive ? '$colors.midnightPurple' : '$colors.cloudGray';
@@ -135,10 +158,14 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
                 </Text>
               </Stack>
               <Text fontSize="$8" fontWeight="$700" color="$colors.moonSoftWhite">
-                00:00
+                {startTimeText}
               </Text>
             </Stack>
-            {isShowStartTime && (
+            {isPlatformAndroid ? (
+              isShowStartTime && (
+                <RNDateTimePicker value={startTimeValue} mode="time" display="spinner" onChange={onChangeStartTime} />
+              )
+            ) : (
               <Sheet
                 modal
                 open={isShowStartTime}
@@ -159,7 +186,20 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
                   bg="$colors.midnightPurple"
                   borderTopLeftRadius="$size.x3"
                   borderTopRightRadius="$size.x3">
-                  <Text>asdf</Text>
+                  <Stack width="$fluid" justify="center" items="flex-end" px="$size.x1">
+                    <Stack justify="center" items="center" onPress={onCloseStartTime}>
+                      <Text fontSize="$5" fontWeight="$700" color="$colors.moonSoftWhite">
+                        완료
+                      </Text>
+                    </Stack>
+                  </Stack>
+                  <RNDateTimePicker
+                    value={startTimeValue}
+                    mode="time"
+                    display="spinner"
+                    textColor="#FDE8D6"
+                    onChange={onChangeStartTime}
+                  />
                 </Sheet.Frame>
               </Sheet>
             )}
@@ -177,7 +217,7 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
                 </Text>
               </Stack>
               <Text fontSize="$8" fontWeight="$700" color="$colors.moonSoftWhite">
-                00 분
+                {durationText}
               </Text>
             </Stack>
             {isShowDuration && (
@@ -185,7 +225,8 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
                 modal
                 open={isShowDuration}
                 onOpenChange={(open: boolean) => !open && onCloseDuration()}
-                snapPoints={[32]}
+                snapPoints={[20]}
+                moveOnKeyboardChange
                 dismissOnSnapToBottom
                 animation="quick">
                 <Sheet.Overlay
@@ -201,7 +242,40 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
                   bg="$colors.midnightPurple"
                   borderTopLeftRadius="$size.x3"
                   borderTopRightRadius="$size.x3">
-                  <Text>123</Text>
+                  <Stack flex={1} width="$fluid" px="$size.x1" gap="$size.x5">
+                    <Stack width="$fluid" flexDirection="row" justify="space-between" px="$size.x1">
+                      <Text fontSize="$7" fontWeight="$600" color="$colors.moonSoftWhite">
+                        소요 시간
+                      </Text>
+                      <Stack justify="center" items="center" onPress={onCloseDuration}>
+                        <Text fontSize="$5" fontWeight="$700" color="$colors.moonSoftWhite">
+                          완료
+                        </Text>
+                      </Stack>
+                    </Stack>
+                    <Stack width="$fluid" flexDirection="row" justify="space-between" items="center" gap="$size.x1_5">
+                      <Input
+                        value={durationValue.toString()}
+                        onChangeText={(text) => {
+                          onChangeDuration(text);
+                        }}
+                        width="$fluid"
+                        size="$x12"
+                        px="$size.x2"
+                        placeholder="분 단위로 입력"
+                        placeholderTextColor="#858090"
+                        fontSize="$8"
+                        fontWeight="500"
+                        color="$colors.moonSoftWhite"
+                        bg="$colorTransparent"
+                        borderColor="$colors.moonSoftWhite"
+                        keyboardType="number-pad"
+                        focusStyle={{
+                          borderColor: '$colors.lampYellow',
+                        }}
+                      />
+                    </Stack>
+                  </Stack>
                 </Sheet.Frame>
               </Sheet>
             )}
@@ -261,7 +335,6 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
     );
   },
 );
-YoasobiChoiceBox.displayName = 'YoasobiChoiceBox';
 
 const YoasobiResultBox = memo<IYoasobiResultBoxProps>(({ yoasobiDay, yoasobiDate, createdDate }) => {
   const MS_PER_DAY = 1000 * 60 * 60 * 24;
@@ -358,13 +431,13 @@ const YoasobiResultBox = memo<IYoasobiResultBoxProps>(({ yoasobiDay, yoasobiDate
     </BlurBox>
   );
 });
-YoasobiResultBox.displayName = 'YoasobiResultBox';
 
 export const HomeScreen = memo(() => {
   const [isMidnightNotificationEnabled, setIsMidnightNotificationEnabled] = useState<boolean>(false);
-  const [yoasobi, setYoasobi] = useState<IYoasobi | null>(null);
-  const [selectedDay, setSelectedDay] = useState<DayOfWeek>(DayOfWeek.Sunday);
-  const [startTime, setStartTime] = useState<Date>();
+  const [existedYoasobi, setExistedYoasobi] = useState<IYoasobi | null>(null);
+  const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<DayOfWeek>(DayOfWeek.Sunday);
+  const [newYoasobiDate, setNewYoasobiDate] = useState<Date>(new Date());
+  const [duration, setDuration] = useState<number>(0);
   const [isStartTimeSheetOpen, setIsStartTimeSheetOpen] = useState<boolean>(false);
   const [isDurationSheetOpen, setIsDurationSheetOpen] = useState<boolean>(false);
   const [getWeeklyYoasobiQuery] = useGetWeeklyYoasobiLazyQuery();
@@ -375,39 +448,65 @@ export const HomeScreen = memo(() => {
     return { weekStartDate };
   }, []);
 
-  const handlePressDay = useCallback((day: DayOfWeek) => {
-    setSelectedDay(day);
-  }, []);
+  const handlePressDay = useCallback(
+    (day: DayOfWeek) => {
+      setSelectedDayOfWeek(day);
+      const { dateByDayOfWeek } = getDateByDayOfWeekUtil({ weekStartDate, dayOfWeek: day });
+      setNewYoasobiDate((prev) => {
+        const prevStartTime = { hours: prev.getHours(), minutes: prev.getMinutes() };
+        const updatedDate = new Date(dateByDayOfWeek);
+        updatedDate.setHours(prevStartTime.hours);
+        updatedDate.setMinutes(prevStartTime.minutes);
+        return updatedDate;
+      });
+    },
+    [weekStartDate],
+  );
 
   const handleCheckMidnightNotification = useCallback((checked: boolean) => {
     setIsMidnightNotificationEnabled(checked);
   }, []);
 
   const handleShowStartTimeSheet = useCallback(() => {
-    console.log('Show Start Time Sheet');
     setIsStartTimeSheetOpen(true);
   }, []);
 
   const handleShowDurationSheet = useCallback(() => {
-    console.log('Show Duration Sheet');
     setIsDurationSheetOpen(true);
   }, []);
 
   const handleCloseStartTimeSheet = useCallback(() => {
-    console.log('Close Start Time Sheet');
     setIsStartTimeSheetOpen(false);
   }, []);
 
   const handleCloseDurationSheet = useCallback(() => {
-    console.log('Close Duration Sheet');
     setIsDurationSheetOpen(false);
+  }, []);
+
+  const handleChangeStartTime = useCallback((event: DateTimePickerEvent, startTime?: Date) => {
+    const isStartTimeUpdated = event.type === 'set' && startTime;
+    if (!isStartTimeUpdated) {
+      return;
+    }
+    setNewYoasobiDate((prev) => {
+      const updatedDate = new Date(prev);
+      updatedDate.setHours(startTime.getHours());
+      updatedDate.setMinutes(startTime.getMinutes());
+      return updatedDate;
+    });
+  }, []);
+
+  const handleChangeDuration = useCallback((durationString: string) => {
+    const parsedDuration = parseInt(durationString, 10);
+    const duration = isNaN(parsedDuration) ? 0 : parsedDuration;
+    setDuration(duration);
   }, []);
 
   const handlePressRandomDay = useCallback(() => {
     const randomIndex = Math.floor(Math.random() * DAY_OF_WEEK_ARRAY.length);
-    console.log(DAY_OF_WEEK_ARRAY[randomIndex], 'asdf');
+
     const selectedRandomDay = DAY_OF_WEEK_ARRAY[randomIndex];
-    setSelectedDay(selectedRandomDay);
+    setSelectedDayOfWeek(selectedRandomDay);
   }, []);
 
   const fetchWeeklyYoasobi = useCallback(async () => {
@@ -423,7 +522,7 @@ export const HomeScreen = memo(() => {
     if (!yoasobi) {
       return;
     }
-    setYoasobi(yoasobi);
+    setExistedYoasobi(yoasobi);
   }, [getWeeklyYoasobiQuery, weekStartDate]);
 
   useDidMount(async () => {
@@ -442,18 +541,22 @@ export const HomeScreen = memo(() => {
               새벽 산책 해볼까요?
             </Text>
           </Stack>
-          {yoasobi ? (
+          {existedYoasobi ? (
             <YoasobiResultBox
-              yoasobiDay={yoasobi.dayOfWeek}
-              yoasobiDate={yoasobi.yoasobiDate}
-              createdDate={yoasobi.createdAt}
+              yoasobiDay={existedYoasobi.dayOfWeek}
+              yoasobiDate={existedYoasobi.yoasobiDate}
+              createdDate={existedYoasobi.createdAt}
             />
           ) : (
             <YoasobiChoiceBox
-              selectedDay={selectedDay}
+              selectedDayOfWeek={selectedDayOfWeek}
               isMidnightNotificationEnabled={isMidnightNotificationEnabled}
               isShowStartTime={isStartTimeSheetOpen}
               isShowDuration={isDurationSheetOpen}
+              startTimeValue={newYoasobiDate}
+              durationValue={duration}
+              onChangeStartTime={(event, date) => handleChangeStartTime(event, date)}
+              onChangeDuration={(durationString) => handleChangeDuration(durationString)}
               onPressShowStartTime={handleShowStartTimeSheet}
               onPressShowDuration={handleShowDurationSheet}
               onCloseStartTime={handleCloseStartTimeSheet}
@@ -468,5 +571,3 @@ export const HomeScreen = memo(() => {
     </DefaultLayout>
   );
 });
-
-HomeScreen.displayName = 'HomeScreen';
