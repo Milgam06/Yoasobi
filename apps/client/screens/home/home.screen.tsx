@@ -1,9 +1,16 @@
 import { BlurBox, DefaultLayout } from '@/components';
-import { DAY_OF_WEEK_ARRAY, DAY_OF_WEEK_TEXT } from '@/constants';
+import {
+  DAY_OF_WEEK_ARRAY,
+  DAY_OF_WEEK_TEXT,
+  MAX_YOASOBI_DURATION_MINUTES,
+  MIN_YOASOBI_DURATION_MINUTES,
+} from '@/constants';
 import { DayOfWeek, useGetWeeklyYoasobiLazyQuery } from '@/libs';
 import { getDateByDayOfWeekUtil, getWeekStartDateUtil } from '@/utils';
 import { faAlarmClock } from '@fortawesome/free-solid-svg-icons/faAlarmClock';
 import { faBell } from '@fortawesome/free-solid-svg-icons/faBell';
+import { faMinus } from '@fortawesome/free-solid-svg-icons/faMinus';
+import { faPlus } from '@fortawesome/free-solid-svg-icons/faPlus';
 import { faClock } from '@fortawesome/free-solid-svg-icons/faClock';
 import { faStopwatch } from '@fortawesome/free-solid-svg-icons/faStopwatch';
 import { faBurst } from '@fortawesome/free-solid-svg-icons/faBurst';
@@ -12,7 +19,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { memo, useCallback, useMemo, useState } from 'react';
 import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useDidMount } from 'rooks';
-import { Button, ColorTokens, Input, Progress, ScrollView, Separator, Sheet, Stack, Switch, Text } from 'tamagui';
+import { Button, ColorTokens, Progress, ScrollView, Separator, Sheet, Stack, Switch, Text } from 'tamagui';
 import { Platform } from 'react-native';
 
 type IYoasobi = {
@@ -38,7 +45,8 @@ type IYoasobiChoiceBoxProps = {
   onPressDay: (day: DayOfWeek) => void;
   onPressRandomDay: () => void;
   onChangeStartTime: (event: DateTimePickerEvent, date?: Date) => void;
-  onChangeDuration: (duration: string) => void;
+  onIncreaseDuration: () => void;
+  onDecreaseDuration: () => void;
   onCheckMidnightNotification: (checked: boolean) => void;
 };
 
@@ -64,7 +72,8 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
     onPressRandomDay,
     onCheckMidnightNotification,
     onChangeStartTime,
-    onChangeDuration,
+    onIncreaseDuration,
+    onDecreaseDuration,
   }) => {
     const isPlatformAndroid = Platform.OS === 'android';
 
@@ -73,11 +82,6 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
       const minutes = startTimeValue.getMinutes().toString().padStart(2, '0');
       return `${hours} : ${minutes}`;
     }, [startTimeValue]);
-
-    const durationText = useMemo(() => {
-      const durationMinutes = durationValue.toString().padStart(2, '0');
-      return `${durationMinutes} 분`;
-    }, [durationValue]);
 
     return (
       <BlurBox>
@@ -170,7 +174,7 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
                 modal
                 open={isShowStartTime}
                 onOpenChange={(open: boolean) => !open && onCloseStartTime()}
-                snapPoints={[32]}
+                snapPoints={[36]}
                 dismissOnSnapToBottom
                 animation="quick">
                 <Sheet.Overlay
@@ -217,7 +221,7 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
                 </Text>
               </Stack>
               <Text fontSize="$8" fontWeight="$700" color="$colors.moonSoftWhite">
-                {durationText}
+                {durationValue} 분
               </Text>
             </Stack>
             {isShowDuration && (
@@ -225,7 +229,7 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
                 modal
                 open={isShowDuration}
                 onOpenChange={(open: boolean) => !open && onCloseDuration()}
-                snapPoints={[20]}
+                snapPoints={[32]}
                 moveOnKeyboardChange
                 dismissOnSnapToBottom
                 animation="quick">
@@ -242,9 +246,9 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
                   bg="$colors.midnightPurple"
                   borderTopLeftRadius="$size.x3"
                   borderTopRightRadius="$size.x3">
-                  <Stack flex={1} width="$fluid" px="$size.x1" gap="$size.x5">
+                  <Stack flex={1} width="$fluid" px="$size.x1" gap="$size.x3">
                     <Stack width="$fluid" flexDirection="row" justify="space-between" px="$size.x1">
-                      <Text fontSize="$7" fontWeight="$600" color="$colors.moonSoftWhite">
+                      <Text fontSize="$7" fontWeight="$900" color="$colors.moonSoftWhite">
                         소요 시간
                       </Text>
                       <Stack justify="center" items="center" onPress={onCloseDuration}>
@@ -253,27 +257,56 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
                         </Text>
                       </Stack>
                     </Stack>
-                    <Stack width="$fluid" flexDirection="row" justify="space-between" items="center" gap="$size.x1_5">
-                      <Input
-                        value={durationValue.toString()}
-                        onChangeText={(text) => {
-                          onChangeDuration(text);
-                        }}
-                        width="$fluid"
-                        size="$x12"
-                        px="$size.x2"
-                        placeholder="분 단위로 입력"
-                        placeholderTextColor="#858090"
-                        fontSize="$8"
-                        fontWeight="500"
-                        color="$colors.moonSoftWhite"
-                        bg="$colorTransparent"
-                        borderColor="$colors.moonSoftWhite"
-                        keyboardType="number-pad"
-                        focusStyle={{
-                          borderColor: '$colors.lampYellow',
-                        }}
-                      />
+                    <Stack width="$fluid" px="$size.x2">
+                      <Text color="$colors.cloudGray">
+                        최소 {MIN_YOASOBI_DURATION_MINUTES}분 / 최대 {MAX_YOASOBI_DURATION_MINUTES}분
+                      </Text>
+                    </Stack>
+                    <Stack
+                      width="$fluid"
+                      flexDirection="row"
+                      justify="space-between"
+                      items="center"
+                      px="$size.x5"
+                      py="$size.x6"
+                      borderWidth={1}
+                      borderColor="$colors.cloudGray"
+                      bg="$colors.midnightPurple_Darker"
+                      style={{ borderRadius: 20 }}>
+                      <Stack
+                        width="$fit"
+                        p="$size.x5"
+                        bg="$colors.midnightPurple"
+                        borderWidth={1}
+                        borderColor="$colors.cloudGray"
+                        style={{ borderRadius: 16 }}
+                        onPress={onDecreaseDuration}>
+                        <FontAwesomeIcon size={26} color="#858090" icon={faMinus} />
+                      </Stack>
+                      <Stack
+                        justify="center"
+                        items="center"
+                        px="$size.x6"
+                        py="$size.x3"
+                        bg="$colors.midnightPurple"
+                        style={{ borderRadius: 16 }}>
+                        <Text fontSize="$10" fontWeight="$800" color="$colors.moonSoftWhite">
+                          {durationValue}
+                        </Text>
+                        <Text fontSize="$5" color="$colors.moonSoftWhite">
+                          분
+                        </Text>
+                      </Stack>
+                      <Stack
+                        width="$fit"
+                        p="$size.x5"
+                        bg="$colors.midnightPurple"
+                        borderWidth={1}
+                        borderColor="$colors.cloudGray"
+                        style={{ borderRadius: 16 }}
+                        onPress={onIncreaseDuration}>
+                        <FontAwesomeIcon size={26} color="#858090" icon={faPlus} />
+                      </Stack>
                     </Stack>
                   </Stack>
                 </Sheet.Frame>
@@ -437,7 +470,7 @@ export const HomeScreen = memo(() => {
   const [existedYoasobi, setExistedYoasobi] = useState<IYoasobi | null>(null);
   const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<DayOfWeek>(DayOfWeek.Sunday);
   const [newYoasobiDate, setNewYoasobiDate] = useState<Date>(new Date());
-  const [duration, setDuration] = useState<number>(0);
+  const [duration, setDuration] = useState<number>(MIN_YOASOBI_DURATION_MINUTES);
   const [isStartTimeSheetOpen, setIsStartTimeSheetOpen] = useState<boolean>(false);
   const [isDurationSheetOpen, setIsDurationSheetOpen] = useState<boolean>(false);
   const [getWeeklyYoasobiQuery] = useGetWeeklyYoasobiLazyQuery();
@@ -496,10 +529,24 @@ export const HomeScreen = memo(() => {
     });
   }, []);
 
-  const handleChangeDuration = useCallback((durationString: string) => {
-    const parsedDuration = parseInt(durationString, 10);
-    const duration = isNaN(parsedDuration) ? 0 : parsedDuration;
-    setDuration(duration);
+  const handleIncreaseDuration = useCallback(() => {
+    setDuration((prev) => {
+      const isDurationReachedMax = prev >= MAX_YOASOBI_DURATION_MINUTES;
+      if (isDurationReachedMax) {
+        return prev;
+      }
+      return prev + 5;
+    });
+  }, []);
+
+  const handleDecreaseDuration = useCallback(() => {
+    setDuration((prev) => {
+      const isDurationReachedMin = prev <= MIN_YOASOBI_DURATION_MINUTES;
+      if (isDurationReachedMin) {
+        return prev;
+      }
+      return prev - 5;
+    });
   }, []);
 
   const handlePressRandomDay = useCallback(() => {
@@ -556,7 +603,8 @@ export const HomeScreen = memo(() => {
               startTimeValue={newYoasobiDate}
               durationValue={duration}
               onChangeStartTime={(event, date) => handleChangeStartTime(event, date)}
-              onChangeDuration={(durationString) => handleChangeDuration(durationString)}
+              onIncreaseDuration={handleIncreaseDuration}
+              onDecreaseDuration={handleDecreaseDuration}
               onPressShowStartTime={handleShowStartTimeSheet}
               onPressShowDuration={handleShowDurationSheet}
               onCloseStartTime={handleCloseStartTimeSheet}

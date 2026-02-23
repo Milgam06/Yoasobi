@@ -4,6 +4,7 @@ import { createFont, createTamagui, createTokens } from 'tamagui';
 const tokens = createTokens({
   colors: {
     midnightPurple: '#313252',
+    midnightPurple_Darker: '#1B1D37',
     moonSoftWhite: '#FDE8D6',
     streetBlack: '#100F1E',
     cloudGray: '#858090',
