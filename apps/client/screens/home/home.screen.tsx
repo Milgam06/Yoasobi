@@ -5,7 +5,7 @@ import {
   MAX_YOASOBI_DURATION_MINUTES,
   MIN_YOASOBI_DURATION_MINUTES,
 } from '@/constants';
-import { DayOfWeek, useGetWeeklyYoasobiLazyQuery } from '@/libs';
+import { DayOfWeek, useCreateYoasobiMutation, useGetWeeklyYoasobiLazyQuery } from '@/libs';
 import { getDateByDayOfWeekUtil, getWeekStartDateUtil } from '@/utils';
 import { faAlarmClock } from '@fortawesome/free-solid-svg-icons/faAlarmClock';
 import { faBell } from '@fortawesome/free-solid-svg-icons/faBell';
@@ -344,25 +344,6 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
               <Switch.Thumb animation="quick" bg="$colors.moonSoftWhite" />
             </Switch>
           </Stack>
-
-          <Button
-            width="$fluid"
-            height="auto"
-            py="$size.x1_5"
-            bg="$colors.lampYellow"
-            borderTopLeftRadius="$size.x5"
-            borderTopRightRadius="$size.x5"
-            borderBottomLeftRadius="$size.x5"
-            borderBottomRightRadius="$size.x5"
-            pressStyle={{
-              bg: '$colors.lampYellow',
-              opacity: 0.8,
-              scale: 0.98,
-            }}>
-            <Text fontSize="$8" fontWeight="$700" color="$colors.midnightPurple">
-              생성하기
-            </Text>
-          </Button>
         </Stack>
       </BlurBox>
     );
@@ -466,14 +447,16 @@ const YoasobiResultBox = memo<IYoasobiResultBoxProps>(({ yoasobiDay, yoasobiDate
 });
 
 export const HomeScreen = memo(() => {
+  const today = new Date();
   const [isMidnightNotificationEnabled, setIsMidnightNotificationEnabled] = useState<boolean>(false);
   const [existedYoasobi, setExistedYoasobi] = useState<IYoasobi | null>(null);
-  const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<DayOfWeek>(DayOfWeek.Sunday);
-  const [newYoasobiDate, setNewYoasobiDate] = useState<Date>(new Date());
+  const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<DayOfWeek>(DAY_OF_WEEK_ARRAY[today.getDay()]);
+  const [newYoasobiDate, setNewYoasobiDate] = useState<Date>(today);
   const [duration, setDuration] = useState<number>(MIN_YOASOBI_DURATION_MINUTES);
   const [isStartTimeSheetOpen, setIsStartTimeSheetOpen] = useState<boolean>(false);
   const [isDurationSheetOpen, setIsDurationSheetOpen] = useState<boolean>(false);
   const [getWeeklyYoasobiQuery] = useGetWeeklyYoasobiLazyQuery();
+  const [createYoasobiMutation] = useCreateYoasobiMutation();
 
   const { weekStartDate } = useMemo(() => {
     const currentDate = new Date();
@@ -572,14 +555,33 @@ export const HomeScreen = memo(() => {
     setExistedYoasobi(yoasobi);
   }, [getWeeklyYoasobiQuery, weekStartDate]);
 
+  const createNewYoasobi = useCallback(async () => {
+    const { data } = await createYoasobiMutation({
+      variables: {
+        input: {
+          userId: 'currentUserId',
+          dayOfWeek: selectedDayOfWeek,
+          yoasobiDate: newYoasobiDate,
+          alarmTime: newYoasobiDate,
+          duration,
+        },
+      },
+    });
+    return data;
+  }, [createYoasobiMutation, duration, newYoasobiDate, selectedDayOfWeek]);
+
+  const handlePressCreateYoasobi = useCallback(async () => {
+    await createNewYoasobi();
+  }, [createNewYoasobi]);
+
   useDidMount(async () => {
     await fetchWeeklyYoasobi();
   });
 
   return (
     <DefaultLayout isBlur hasHeader>
-      <ScrollView>
-        <Stack flex={1} gap="$size.x4">
+      <ScrollView flex={1}>
+        <Stack flex={1} px="$size.x2" gap="$size.x4">
           <Stack pt="$size.x4" gap="$size.x1_5">
             <Text fontSize="$7" fontWeight="$500" color="$colors.cloudGray">
               이번주 YOASOBI 를 정해요!
@@ -595,24 +597,45 @@ export const HomeScreen = memo(() => {
               createdDate={existedYoasobi.createdAt}
             />
           ) : (
-            <YoasobiChoiceBox
-              selectedDayOfWeek={selectedDayOfWeek}
-              isMidnightNotificationEnabled={isMidnightNotificationEnabled}
-              isShowStartTime={isStartTimeSheetOpen}
-              isShowDuration={isDurationSheetOpen}
-              startTimeValue={newYoasobiDate}
-              durationValue={duration}
-              onChangeStartTime={(event, date) => handleChangeStartTime(event, date)}
-              onIncreaseDuration={handleIncreaseDuration}
-              onDecreaseDuration={handleDecreaseDuration}
-              onPressShowStartTime={handleShowStartTimeSheet}
-              onPressShowDuration={handleShowDurationSheet}
-              onCloseStartTime={handleCloseStartTimeSheet}
-              onCloseDuration={handleCloseDurationSheet}
-              onPressDay={handlePressDay}
-              onPressRandomDay={handlePressRandomDay}
-              onCheckMidnightNotification={handleCheckMidnightNotification}
-            />
+            <Stack flex={1} width="$fluid" gap="$size.x6">
+              <YoasobiChoiceBox
+                selectedDayOfWeek={selectedDayOfWeek}
+                isMidnightNotificationEnabled={isMidnightNotificationEnabled}
+                isShowStartTime={isStartTimeSheetOpen}
+                isShowDuration={isDurationSheetOpen}
+                startTimeValue={newYoasobiDate}
+                durationValue={duration}
+                onChangeStartTime={(event, date) => handleChangeStartTime(event, date)}
+                onIncreaseDuration={handleIncreaseDuration}
+                onDecreaseDuration={handleDecreaseDuration}
+                onPressShowStartTime={handleShowStartTimeSheet}
+                onPressShowDuration={handleShowDurationSheet}
+                onCloseStartTime={handleCloseStartTimeSheet}
+                onCloseDuration={handleCloseDurationSheet}
+                onPressDay={handlePressDay}
+                onPressRandomDay={handlePressRandomDay}
+                onCheckMidnightNotification={handleCheckMidnightNotification}
+              />
+              <Button
+                width="$fluid"
+                height="auto"
+                py="$size.x2"
+                bg="$colors.lampYellow"
+                borderTopLeftRadius="$size.x4"
+                borderTopRightRadius="$size.x4"
+                borderBottomLeftRadius="$size.x4"
+                borderBottomRightRadius="$size.x4"
+                pressStyle={{
+                  bg: '$colors.lampYellow',
+                  opacity: 0.8,
+                  scale: 0.98,
+                }}
+                onPress={handlePressCreateYoasobi}>
+                <Text fontSize="$8" fontWeight="$800" color="$colors.midnightPurple">
+                  생성하기
+                </Text>
+              </Button>
+            </Stack>
           )}
         </Stack>
       </ScrollView>

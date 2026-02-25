@@ -10,3 +10,11 @@ query getWeeklyYoasobi($input: GetYoasobiInputDto!) {
     }
   }
 }
+
+mutation createYoasobi($input: CreateYoasobiInputDto!) {
+  createYoasobi(input: $input) {
+    yoasobi {
+      id
+    }
+  }
+}

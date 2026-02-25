@@ -24,7 +24,7 @@ export const DefaultLayout = memo<IDefaultLayoutProps>(
         onLoadEnd={onBackgroundLoad}>
         <SafeAreaView edges={screenEdge} style={{ flex: 1 }}>
           {hasHeader && <Header />}
-          <Stack flex={1} px="$size.x6">
+          <Stack flex={1} px="$size.x4">
             {children}
           </Stack>
         </SafeAreaView>
