@@ -47,13 +47,21 @@ jobs:
           script: |
             set -e
             cd ${{ secrets.DEPLOY_PATH || '/opt/yoasobi-backend' }}
-            echo "[1] pull"
+            echo "[1] pull images"
             docker compose pull
+
             echo "[2] up postgres"
             docker compose up -d postgres
-            docker compose wait postgres
+
+            echo "[2.5] wait postgres healthy"
+            until [ "$(docker inspect -f '{{.State.Health.Status}}' yoasobi-postgres 2>/dev/null)" = "healthy" ]; do
+              echo "postgres is not healthy yet..."
+              sleep 2
+            done
+
             echo "[3] migrate"
             docker compose run --rm migrate
+
             echo "[4] up backend"
             docker compose up -d yoasobi-backend
             docker image prune -f
