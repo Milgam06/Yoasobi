@@ -10,7 +10,7 @@ COPY apps/server/package.json ./apps/server/package.json
 RUN yarn install --frozen-lockfile
 
 COPY . .
-RUN yarn workspace server build
+RUN yarn workspace @yoasobi/server build
 
 # Runner stage
 FROM node:24-alpine AS runner
