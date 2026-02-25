@@ -53,6 +53,6 @@ input CreateYoasobiInputDto {
   userId: String!
   dayOfWeek: DayOfWeek!
   yoasobiDate: DateTime!
-  alarmTime: String!
+  alarmTime: DateTime!
   duration: Int!
 }

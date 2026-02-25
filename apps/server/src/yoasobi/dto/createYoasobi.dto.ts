@@ -17,7 +17,7 @@ export class CreateYoasobiInputDto {
   @IsDate()
   yoasobiDate: Date;
 
-  @Field(() => String)
+  @Field(() => Date)
   @IsDate()
   alarmTime: Date;
 
