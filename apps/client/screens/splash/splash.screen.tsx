@@ -52,5 +52,3 @@ export const SplashScreen = memo(() => {
     </DefaultLayout>
   );
 });
-
-SplashScreen.displayName = 'SplashScreen';

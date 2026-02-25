@@ -1,0 +1,58 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type CreateYoasobiOutputDto {
+  yoasobi: YoasobiEntity!
+}
+
+type YoasobiEntity {
+  id: String!
+  userId: String!
+  dayOfWeek: DayOfWeek!
+  yoasobiDate: DateTime!
+  weekStartDate: DateTime!
+  alarmTime: DateTime!
+  duration: Int!
+  createdAt: DateTime!
+}
+
+enum DayOfWeek {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type GetYoasobiOutputDto {
+  yoasobi: YoasobiEntity
+}
+
+type Query {
+  getYoasobi(input: GetYoasobiInputDto!): GetYoasobiOutputDto!
+}
+
+input GetYoasobiInputDto {
+  userId: String!
+  weekStartDate: DateTime!
+}
+
+type Mutation {
+  createYoasobi(input: CreateYoasobiInputDto!): CreateYoasobiOutputDto!
+}
+
+input CreateYoasobiInputDto {
+  userId: String!
+  dayOfWeek: DayOfWeek!
+  yoasobiDate: DateTime!
+  alarmTime: DateTime!
+  duration: Int!
+}

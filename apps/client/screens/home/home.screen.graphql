@@ -1,0 +1,20 @@
+query getWeeklyYoasobi($input: GetYoasobiInputDto!) {
+  getYoasobi(input: $input) {
+    yoasobi {
+      id
+      yoasobiDate
+      dayOfWeek
+      alarmTime
+      duration
+      createdAt
+    }
+  }
+}
+
+mutation createYoasobi($input: CreateYoasobiInputDto!) {
+  createYoasobi(input: $input) {
+    yoasobi {
+      id
+    }
+  }
+}

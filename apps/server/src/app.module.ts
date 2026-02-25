@@ -2,23 +2,27 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { NotificationModule } from './notification';
+import { join } from 'path';
+import { PrismaModule } from './prisma';
+import { YoasobiModule } from './yoasobi';
+import { UtilModule } from './utils';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath:
-        process.env.NODE_ENV === 'production'
-          ? '.env.production'
-          : '.env.development',
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: '/pacakges/shared/graphql/schema.gql',
+      autoSchemaFile: join(
+        process.cwd(),
+        '../../packages/shared/graphql/schema.gql',
+      ),
       playground: false,
     }),
-    NotificationModule,
+    PrismaModule,
+    UtilModule,
+    YoasobiModule,
   ],
 })
 export class AppModule {}

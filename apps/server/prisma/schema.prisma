@@ -6,10 +6,60 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
   moduleFormat = "cjs"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+
+enum DayOfWeek {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+model User {
+  id String @id @default(uuid())
+  name String 
+  yoasobi Yoasobi[]
+  history History[]
+  timezone String @default("Asia/Seoul")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Yoasobi {
+  id String @id @default(uuid())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  dayOfWeek DayOfWeek 
+  yoasobiDate DateTime
+  weekStartDate DateTime
+  alarmTime DateTime
+  duration Int
+  history History?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@unique([userId, weekStartDate])
+}
+
+model History {
+  id String @id @default(uuid())
+  yoasobi Yoasobi @relation(fields: [yoasobiId], references: [id], onDelete: Cascade)
+  yoasobiId String @unique
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  note String
+  image String[]
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }

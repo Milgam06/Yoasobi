@@ -46,5 +46,8 @@ jobs:
             set -e
             cd ${{ secrets.DEPLOY_PATH || '/opt/yoasobi-backend' }}
             docker compose pull
-            docker compose up -d
+            docker compose up -d postgres
+            docker compose wait postgres
+            docker compose run --rm migrate
+            docker compose up -d yoasobi-backend
             docker image prune -f

@@ -11,5 +11,3 @@ export const HistoryScreen = memo(() => {
     </DefaultLayout>
   );
 });
-
-HistoryScreen.displayName = 'HistoryScreen';

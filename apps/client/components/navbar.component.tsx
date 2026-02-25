@@ -27,40 +27,38 @@ export const Navbar = memo((props: BottomTabBarProps) => {
         flex={1}
         justify="center"
         items="center"
-        py="$size.x4"
+        pt="$size.x4"
         opacity={isSelectedItemHome ? 1 : 0.4}
         onPress={() => navigation.navigate('home')}
         animation="200ms"
-        gap="$size.x0_5"
+        gap="$size.x1"
         {...(isSelectedItemHome && {
           shadowColor: '$colors.lampYellow',
           shadowOpacity: 1,
           shadowRadius: 14,
           shadowOffset: { width: 0, height: 4 },
         })}>
-        <FontAwesomeIcon size={36} icon={faHome} color="#FDE8D6" />
+        <FontAwesomeIcon size={32} icon={faHome} color="#FDE8D6" />
         <Text fontWeight="$800">HOME</Text>
       </Stack>
       <Stack
         flex={1}
         justify="center"
         items="center"
-        py="$size.x4"
+        pt="$size.x4"
         opacity={isSelectedItemHistory ? 1 : 0.4}
         onPress={() => navigation.navigate('history')}
         animation="200ms"
-        gap="$size.x0_5"
+        gap="$size.x1"
         {...(isSelectedItemHistory && {
           shadowColor: '$colors.lampYellow',
           shadowOpacity: 1,
           shadowRadius: 14,
           shadowOffset: { width: 0, height: 4 },
         })}>
-        <FontAwesomeIcon size={36} icon={faCalendarDays} color="#FDE8D6" />
+        <FontAwesomeIcon size={32} icon={faCalendarDays} color="#FDE8D6" />
         <Text fontWeight="$800">HISTORY</Text>
       </Stack>
     </Stack>
   );
 });
-
-Navbar.displayName = 'Navbar';
