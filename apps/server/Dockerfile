@@ -21,9 +21,12 @@ RUN corepack enable
 
 COPY package.json yarn.lock ./
 COPY apps/server/package.json ./apps/server/package.json
+
 RUN yarn install --frozen-lockfile --production=true
 
 COPY --from=builder /repo/apps/server/dist ./dist
+COPY --from=builder /repo/apps/server/prisma ./prisma
+COPY --from=builder /repo/apps/server/prisma.config.ts ./prisma.config.ts
 
 ENV PORT=8686
 EXPOSE 8686
