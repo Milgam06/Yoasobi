@@ -34,7 +34,7 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ghcr.io/milgam06/yoasobi:main
+            ghcr.io/milgam06/yoasobi-backend:main
 
       - uses: appleboy/ssh-action@v1.2.0
         with:
