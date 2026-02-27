@@ -17,8 +17,8 @@ import type * as Prisma from "./prismaNamespace"
 
 const config: runtime.GetPrismaClientConfig = {
   "previewFeatures": [],
-  "clientVersion": "7.4.0",
-  "engineVersion": "ab56fe763f921d033a6c195e7ddeb3e255bdbb57",
+  "clientVersion": "7.4.1",
+  "engineVersion": "55ae170b1ced7fc6ed07a15f110549408c501bb3",
   "activeProvider": "postgresql",
   "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider     = \"prisma-client\"\n  output       = \"../src/generated/prisma\"\n  moduleFormat = \"cjs\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nenum DayOfWeek {\n  SUNDAY\n  MONDAY\n  TUESDAY\n  WEDNESDAY\n  THURSDAY\n  FRIDAY\n  SATURDAY\n}\n\nmodel User {\n  id        String    @id @default(uuid())\n  name      String\n  yoasobi   Yoasobi[]\n  history   History[]\n  timezone  String    @default(\"Asia/Seoul\")\n  createdAt DateTime  @default(now())\n  updatedAt DateTime  @updatedAt\n}\n\nmodel Yoasobi {\n  id            String    @id @default(uuid())\n  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)\n  userId        String\n  dayOfWeek     DayOfWeek\n  yoasobiDate   DateTime\n  weekStartDate DateTime\n  alarmTime     DateTime\n  duration      Int\n  history       History?\n  createdAt     DateTime  @default(now())\n\n  @@unique([userId, weekStartDate])\n  @@index([userId, createdAt])\n}\n\nmodel History {\n  id        String   @id @default(uuid())\n  yoasobi   Yoasobi  @relation(fields: [yoasobiId], references: [id], onDelete: Cascade)\n  yoasobiId String   @unique\n  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n  userId    String\n  note      String\n  image     String[]\n  createdAt DateTime @default(now())\n\n  @@index([userId, createdAt])\n}\n",
   "runtimeDataModel": {
@@ -174,7 +174,7 @@ export interface PrismaClient<
    * ])
    * ```
    * 
-   * Read more in our [docs](https://www.prisma.io/docs/concepts/components/prisma-client/transactions).
+   * Read more in our [docs](https://www.prisma.io/docs/orm/prisma-client/queries/transactions).
    */
   $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { isolationLevel?: Prisma.TransactionIsolationLevel }): runtime.Types.Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
 
