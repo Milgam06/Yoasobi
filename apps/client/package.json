@@ -55,6 +55,8 @@
     "@graphql-codegen/typescript": "^5.0.6",
     "@graphql-codegen/typescript-operations": "^5.0.6",
     "@graphql-codegen/typescript-react-apollo": "^4.3.3",
+    "@react-native-async-storage/async-storage": "^3.0.1",
+    "@supabase/supabase-js": "^2.98.0",
     "@tamagui/babel-plugin": "^1.144.3",
     "@types/react": "~19.1.0",
     "eslint": "^9.25.0",
