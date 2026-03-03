@@ -32,6 +32,4 @@ if (!isPlatformWeb) {
   });
 }
 
-const supabaseAuth = supabase.auth;
-
-export { supabase, supabaseAuth };
+export const supabaseAuth = supabase.auth;
