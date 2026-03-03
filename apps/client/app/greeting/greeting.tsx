@@ -1,3 +1,5 @@
 import { GreetingScreen } from '@/screens';
 
-export default GreetingScreen;
+export default function Greeting() {
+  return <GreetingScreen />;
+}
