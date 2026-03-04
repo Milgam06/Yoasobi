@@ -3,7 +3,7 @@ import { createClient, processLock } from '@supabase/supabase-js';
 import { AppState, Platform } from 'react-native';
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-const supabasePublicKey = process.env.EXPO_PUBLIC_SUPABASE_PUBLIC_KEY;
+const supabasePublicKey = process.env.EXPO_PUBLIC_SUPABASE_KEY;
 
 if (!supabaseUrl || !supabasePublicKey) {
   throw new Error('Supabase URL or Public Key is not defined');
