@@ -22,7 +22,7 @@ export const BlurBox = memo<IBlurBoxProps>(({ px = '$size.x6', py = '$size.x4', 
       }}
       intensity={80}
       tint="dark">
-      <Stack width="$fluid" px="$size.x6" py="$size.x4">
+      <Stack width="$fluid" px={px} py={py}>
         {children}
       </Stack>
     </BlurView>
