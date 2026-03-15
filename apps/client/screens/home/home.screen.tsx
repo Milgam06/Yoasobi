@@ -484,10 +484,12 @@ export const HomeScreen = memo(() => {
   }, []);
 
   const handleShowStartTimeSheet = useCallback(() => {
+    setIsDurationSheetOpen(false);
     setIsStartTimeSheetOpen(true);
   }, []);
 
   const handleShowDurationSheet = useCallback(() => {
+    setIsStartTimeSheetOpen(false);
     setIsDurationSheetOpen(true);
   }, []);
 
@@ -500,6 +502,10 @@ export const HomeScreen = memo(() => {
   }, []);
 
   const handleChangeStartTime = useCallback((event: DateTimePickerEvent, startTime?: Date) => {
+    if (Platform.OS === 'android') {
+      setIsStartTimeSheetOpen(false);
+    }
+
     const isStartTimeUpdated = event.type === 'set' && startTime;
     if (!isStartTimeUpdated) {
       return;
