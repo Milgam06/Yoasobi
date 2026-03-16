@@ -1,1 +1,1 @@
-export * from './signInUser.resolver';
+export * from './createUser.resolver';

@@ -2,7 +2,7 @@ import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { IsDate, IsString, IsTimeZone, IsUUID } from 'class-validator';
 
 @InputType()
-export class SignInUserInputDto {
+export class CreateUserInputDto {
   @Field(() => String)
   @IsUUID()
   userId: string;
@@ -17,7 +17,7 @@ export class SignInUserInputDto {
 }
 
 @ObjectType()
-export class SignInUserOutputDto {
+export class CreateUserOutputDto {
   @Field(() => String)
   @IsUUID()
   userId: string;
