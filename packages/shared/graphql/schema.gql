@@ -36,6 +36,11 @@ type GetYoasobiOutputDto {
   yoasobi: YoasobiEntity
 }
 
+type CreateUserOutputDto {
+  userId: String!
+  createdAt: String!
+}
+
 type Query {
   getYoasobi(input: GetYoasobiInputDto!): GetYoasobiOutputDto!
 }
@@ -46,7 +51,14 @@ input GetYoasobiInputDto {
 }
 
 type Mutation {
+  createUser(input: CreateUserInputDto!): CreateUserOutputDto!
   createYoasobi(input: CreateYoasobiInputDto!): CreateYoasobiOutputDto!
+}
+
+input CreateUserInputDto {
+  userId: String!
+  name: String!
+  timezone: String!
 }
 
 input CreateYoasobiInputDto {
