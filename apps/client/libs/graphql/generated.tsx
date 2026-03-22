@@ -19,6 +19,18 @@ export type Scalars = {
   DateTime: { input: any; output: any; }
 };
 
+export type CreateUserInputDto = {
+  name: Scalars['String']['input'];
+  timezone: Scalars['String']['input'];
+  userId: Scalars['String']['input'];
+};
+
+export type CreateUserOutputDto = {
+  __typename?: 'CreateUserOutputDto';
+  createdAt: Scalars['String']['output'];
+  userId: Scalars['String']['output'];
+};
+
 export type CreateYoasobiInputDto = {
   alarmTime: Scalars['DateTime']['input'];
   dayOfWeek: DayOfWeek;
@@ -54,7 +66,13 @@ export type GetYoasobiOutputDto = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  createUser: CreateUserOutputDto;
   createYoasobi: CreateYoasobiOutputDto;
+};
+
+
+export type MutationCreateUserArgs = {
+  input: CreateUserInputDto;
 };
 
 
@@ -84,6 +102,13 @@ export type YoasobiEntity = {
   yoasobiDate: Scalars['DateTime']['output'];
 };
 
+export type SignUpUserMutationVariables = Exact<{
+  input: CreateUserInputDto;
+}>;
+
+
+export type SignUpUserMutation = { __typename?: 'Mutation', createUser: { __typename?: 'CreateUserOutputDto', userId: string, createdAt: string } };
+
 export type GetWeeklyYoasobiQueryVariables = Exact<{
   input: GetYoasobiInputDto;
 }>;
@@ -99,6 +124,40 @@ export type CreateYoasobiMutationVariables = Exact<{
 export type CreateYoasobiMutation = { __typename?: 'Mutation', createYoasobi: { __typename?: 'CreateYoasobiOutputDto', yoasobi: { __typename?: 'YoasobiEntity', id: string } } };
 
 
+export const SignUpUserDocument = gql`
+    mutation SignUpUser($input: CreateUserInputDto!) {
+  createUser(input: $input) {
+    userId
+    createdAt
+  }
+}
+    `;
+export type SignUpUserMutationFn = Apollo.MutationFunction<SignUpUserMutation, SignUpUserMutationVariables>;
+
+/**
+ * __useSignUpUserMutation__
+ *
+ * To run a mutation, you first call `useSignUpUserMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSignUpUserMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [signUpUserMutation, { data, loading, error }] = useSignUpUserMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useSignUpUserMutation(baseOptions?: Apollo.MutationHookOptions<SignUpUserMutation, SignUpUserMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<SignUpUserMutation, SignUpUserMutationVariables>(SignUpUserDocument, options);
+      }
+export type SignUpUserMutationHookResult = ReturnType<typeof useSignUpUserMutation>;
+export type SignUpUserMutationResult = Apollo.MutationResult<SignUpUserMutation>;
+export type SignUpUserMutationOptions = Apollo.BaseMutationOptions<SignUpUserMutation, SignUpUserMutationVariables>;
 export const GetWeeklyYoasobiDocument = gql`
     query getWeeklyYoasobi($input: GetYoasobiInputDto!) {
   getYoasobi(input: $input) {

@@ -1,0 +1,6 @@
+mutation SignUpUser($input: CreateUserInputDto!) {
+  createUser(input: $input) {
+    userId
+    createdAt
+  }
+}

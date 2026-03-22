@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons/faUser';
 import { faAt } from '@fortawesome/free-solid-svg-icons/faAt';
 import { faKey } from '@fortawesome/free-solid-svg-icons/faKey';
+import { supabaseAuth, useSignUpUserMutation } from '@/libs';
 
 type IAuthType = 'login' | 'signUp';
 
@@ -400,6 +401,7 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
     password: '',
     nickname: '',
   });
+  const [signUpUserMutation] = useSignUpUserMutation();
 
   const { isCurrentAuthTypeLogin, isCurrentAuthTypeSignUp } = useMemo(() => {
     const isCurrentAuthTypeLogin = currentAuthType === 'login';
@@ -409,6 +411,40 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
       isCurrentAuthTypeSignUp,
     };
   }, [currentAuthType]);
+
+  const createNewUser = useCallback(async () => {
+    const { data: supabaseData, error: supabaseError } = await supabaseAuth.signUp({
+      email: signUpFormData.email,
+      password: signUpFormData.password,
+      options: {
+        data: {
+          name: signUpFormData.nickname,
+        },
+      },
+    });
+
+    if (supabaseError || supabaseData.user === null) {
+      console.error(supabaseError);
+      return;
+    }
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    const { data: signUpUserMutationData, errors: signUpUserMutationErrors } = await signUpUserMutation({
+      variables: {
+        input: {
+          userId: supabaseData.user.id,
+          name: signUpFormData.nickname,
+          timezone,
+        },
+      },
+    });
+    if (signUpUserMutationErrors) {
+      console.error(signUpUserMutationErrors);
+      return;
+    }
+
+    console.log(signUpUserMutationData);
+  }, [signUpFormData.email, signUpFormData.nickname, signUpFormData.password, signUpUserMutation]);
 
   const handlePressConvertAuthType = useCallback(() => {
     setCurrentAuthType((prev) => {
