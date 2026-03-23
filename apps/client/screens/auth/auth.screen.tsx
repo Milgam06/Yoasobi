@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons/faUser';
 import { faAt } from '@fortawesome/free-solid-svg-icons/faAt';
 import { faKey } from '@fortawesome/free-solid-svg-icons/faKey';
-import { supabaseAuth, useSignUpUserMutation } from '@/libs';
+import { supabaseAuth, useCheckUserLazyQuery, useSignUpUserMutation } from '@/libs';
 
 type IAuthType = 'login' | 'signUp';
 
@@ -402,6 +402,7 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
     nickname: '',
   });
   const [signUpUserMutation] = useSignUpUserMutation();
+  const [checkUserQuery] = useCheckUserLazyQuery();
 
   const { isCurrentAuthTypeLogin, isCurrentAuthTypeSignUp } = useMemo(() => {
     const isCurrentAuthTypeLogin = currentAuthType === 'login';
@@ -445,6 +446,30 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
 
     console.log(signUpUserMutationData);
   }, [signUpFormData.email, signUpFormData.nickname, signUpFormData.password, signUpUserMutation]);
+
+  const signInUser = useCallback(async () => {
+    const { data: supabaseData, error: supabaseError } = await supabaseAuth.signInWithPassword({
+      email: loginFormData.email,
+      password: loginFormData.password,
+    });
+
+    if (supabaseError || supabaseData.user === null) {
+      console.error(supabaseError);
+      return;
+    }
+    const { data: checkUserQueryData, error: checkUserQueryError } = await checkUserQuery({
+      variables: {
+        input: {
+          userId: supabaseData.user.id,
+        },
+      },
+    });
+    if (checkUserQueryError) {
+      console.error(checkUserQueryError);
+      return;
+    }
+    console.log(checkUserQueryData);
+  }, [checkUserQuery, loginFormData.email, loginFormData.password]);
 
   const handlePressConvertAuthType = useCallback(() => {
     setCurrentAuthType((prev) => {

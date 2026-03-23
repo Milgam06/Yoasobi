@@ -41,8 +41,25 @@ type CreateUserOutputDto {
   createdAt: String!
 }
 
+type GetUserOutputDto {
+  user: UserEntity
+}
+
+type UserEntity {
+  id: String!
+  name: String!
+  timezone: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
 type Query {
+  getUser(input: GetUserInputDto!): GetUserOutputDto!
   getYoasobi(input: GetYoasobiInputDto!): GetYoasobiOutputDto!
+}
+
+input GetUserInputDto {
+  userId: String!
 }
 
 input GetYoasobiInputDto {

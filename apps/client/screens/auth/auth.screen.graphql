@@ -4,3 +4,11 @@ mutation SignUpUser($input: CreateUserInputDto!) {
     createdAt
   }
 }
+
+query checkUser($input: GetUserInputDto!) {
+  getUser(input: $input) {
+    user {
+      id
+    }
+  }
+}

@@ -54,6 +54,15 @@ export enum DayOfWeek {
   Wednesday = 'WEDNESDAY'
 }
 
+export type GetUserInputDto = {
+  userId: Scalars['String']['input'];
+};
+
+export type GetUserOutputDto = {
+  __typename?: 'GetUserOutputDto';
+  user?: Maybe<UserEntity>;
+};
+
 export type GetYoasobiInputDto = {
   userId: Scalars['String']['input'];
   weekStartDate: Scalars['DateTime']['input'];
@@ -82,12 +91,27 @@ export type MutationCreateYoasobiArgs = {
 
 export type Query = {
   __typename?: 'Query';
+  getUser: GetUserOutputDto;
   getYoasobi: GetYoasobiOutputDto;
+};
+
+
+export type QueryGetUserArgs = {
+  input: GetUserInputDto;
 };
 
 
 export type QueryGetYoasobiArgs = {
   input: GetYoasobiInputDto;
+};
+
+export type UserEntity = {
+  __typename?: 'UserEntity';
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  timezone: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
 };
 
 export type YoasobiEntity = {
@@ -108,6 +132,13 @@ export type SignUpUserMutationVariables = Exact<{
 
 
 export type SignUpUserMutation = { __typename?: 'Mutation', createUser: { __typename?: 'CreateUserOutputDto', userId: string, createdAt: string } };
+
+export type CheckUserQueryVariables = Exact<{
+  input: GetUserInputDto;
+}>;
+
+
+export type CheckUserQuery = { __typename?: 'Query', getUser: { __typename?: 'GetUserOutputDto', user?: { __typename?: 'UserEntity', id: string } | null } };
 
 export type GetWeeklyYoasobiQueryVariables = Exact<{
   input: GetYoasobiInputDto;
@@ -158,6 +189,51 @@ export function useSignUpUserMutation(baseOptions?: Apollo.MutationHookOptions<S
 export type SignUpUserMutationHookResult = ReturnType<typeof useSignUpUserMutation>;
 export type SignUpUserMutationResult = Apollo.MutationResult<SignUpUserMutation>;
 export type SignUpUserMutationOptions = Apollo.BaseMutationOptions<SignUpUserMutation, SignUpUserMutationVariables>;
+export const CheckUserDocument = gql`
+    query checkUser($input: GetUserInputDto!) {
+  getUser(input: $input) {
+    user {
+      id
+    }
+  }
+}
+    `;
+
+/**
+ * __useCheckUserQuery__
+ *
+ * To run a query within a React component, call `useCheckUserQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCheckUserQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCheckUserQuery({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCheckUserQuery(baseOptions: Apollo.QueryHookOptions<CheckUserQuery, CheckUserQueryVariables> & ({ variables: CheckUserQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<CheckUserQuery, CheckUserQueryVariables>(CheckUserDocument, options);
+      }
+export function useCheckUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CheckUserQuery, CheckUserQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<CheckUserQuery, CheckUserQueryVariables>(CheckUserDocument, options);
+        }
+// @ts-ignore
+export function useCheckUserSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<CheckUserQuery, CheckUserQueryVariables>): Apollo.UseSuspenseQueryResult<CheckUserQuery, CheckUserQueryVariables>;
+export function useCheckUserSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<CheckUserQuery, CheckUserQueryVariables>): Apollo.UseSuspenseQueryResult<CheckUserQuery | undefined, CheckUserQueryVariables>;
+export function useCheckUserSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<CheckUserQuery, CheckUserQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<CheckUserQuery, CheckUserQueryVariables>(CheckUserDocument, options);
+        }
+export type CheckUserQueryHookResult = ReturnType<typeof useCheckUserQuery>;
+export type CheckUserLazyQueryHookResult = ReturnType<typeof useCheckUserLazyQuery>;
+export type CheckUserSuspenseQueryHookResult = ReturnType<typeof useCheckUserSuspenseQuery>;
+export type CheckUserQueryResult = Apollo.QueryResult<CheckUserQuery, CheckUserQueryVariables>;
 export const GetWeeklyYoasobiDocument = gql`
     query getWeeklyYoasobi($input: GetYoasobiInputDto!) {
   getYoasobi(input: $input) {
