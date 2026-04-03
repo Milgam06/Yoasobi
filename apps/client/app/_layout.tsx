@@ -19,6 +19,7 @@ import { useDidUpdate } from 'rooks';
 import { TamaguiProvider } from 'tamagui';
 import { ApolloProvider } from '@apollo/client/react';
 import { apolloClient } from '@/libs';
+import { AuthProvider } from '@/providers';
 
 preventAutoHideAsync();
 
@@ -52,7 +53,9 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <GestureHandlerRootView>
           <TamaguiProvider config={config}>
-            <Stack screenOptions={{ headerShown: false }} />
+            <AuthProvider>
+              <Stack screenOptions={{ headerShown: false }} />
+            </AuthProvider>
           </TamaguiProvider>
         </GestureHandlerRootView>
       </SafeAreaProvider>
