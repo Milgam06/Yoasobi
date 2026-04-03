@@ -1,7 +1,23 @@
-import { supabaseAuth, UserEntity } from '@/libs';
+import { supabaseAuth, useCreateUserMutation, useGetExistingUserLazyQuery, UserEntity } from '@/libs';
 import { Session, User } from '@supabase/supabase-js';
 import { createContext, memo, ReactNode, useCallback, useRef, useState } from 'react';
 import { useDidMount, useWillUnmount } from 'rooks';
+
+type ICreateNewUserInput = {
+  userId: string;
+  name: string;
+};
+type ICreateNewUser = (input: ICreateNewUserInput) => Promise<{
+  user: UserEntity;
+}>;
+
+type ICheckExistingUserInput = {
+  userId: string;
+};
+type ICheckExistingUser = (input: ICheckExistingUserInput) => Promise<{
+  isUserExists: boolean;
+  user: UserEntity | null;
+}>;
 
 export type IAuthActionResponse =
   | {
@@ -14,7 +30,7 @@ export type IAuthActionResponse =
 
 export type ISignUpWithEmailInput = {
   email: string;
-  nickname: string;
+  name: string;
   password: string;
 };
 
@@ -49,77 +65,143 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isReady, setIsReady] = useState(false);
 
-  const userId = session?.user.id || null;
-  const authUser = session?.user || null;
-
   const subscriptionRef = useRef<{ unsubscribe: () => void } | null>(null);
   const isMountedRef = useRef<boolean>(true);
+
+  const [getExistingUserQuery] = useGetExistingUserLazyQuery();
+  const [createUserMutation] = useCreateUserMutation();
+
+  const userId = session?.user.id || null;
+  const authUser = session?.user || null;
 
   const clearAuthState = useCallback(() => {
     setSession(null);
     setAppUser(null);
   }, []);
 
-  const signUpWithEmail = useCallback(async (input: ISignUpWithEmailInput): Promise<IAuthActionResponse> => {
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabaseAuth.signUp({
-        email: input.email,
-        password: input.password,
-        options: {
-          data: {
-            nickname: input.nickname,
+  const checkExistingUser = useCallback<ICheckExistingUser>(
+    async ({ userId }) => {
+      const { data, error } = await getExistingUserQuery({
+        variables: {
+          input: {
+            userId,
           },
         },
       });
-      const hasSignUpError = error || !data.user || !data.session;
-      if (hasSignUpError) {
+      if (error || !data) {
+        throw new Error('Failed to check existing user');
+      }
+      const isUserExists = !!data.getUser.user;
+      return {
+        isUserExists: isUserExists,
+        user: data.getUser.user ?? null,
+      };
+    },
+    [getExistingUserQuery],
+  );
+
+  const createNewUser = useCallback<ICreateNewUser>(
+    async ({ userId, name }) => {
+      const { isUserExists, user } = await checkExistingUser({ userId });
+      if (isUserExists && user) {
+        return {
+          user,
+        };
+      }
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const { data, errors } = await createUserMutation({
+        variables: {
+          input: {
+            userId,
+            name,
+            timezone,
+          },
+        },
+      });
+      if (errors || !data) {
+        throw new Error('Failed to create user');
+      }
+      return {
+        user: data.createUser.user,
+      };
+    },
+    [checkExistingUser, createUserMutation],
+  );
+
+  const signUpWithEmail = useCallback(
+    async (input: ISignUpWithEmailInput): Promise<IAuthActionResponse> => {
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabaseAuth.signUp({
+          email: input.email,
+          password: input.password,
+          options: {
+            data: {
+              nickname: input.name,
+            },
+          },
+        });
+        if (error || !data.user || !data.session) {
+          return {
+            ok: false,
+            message: '회원가입에 실패했습니다. 다시 시도해주세요.',
+          };
+        }
+        const { user } = await createNewUser({ userId: data.user.id, name: input.name });
+        setAppUser(user);
+        setSession(data.session);
+        return {
+          ok: true,
+        };
+      } catch (error) {
         return {
           ok: false,
           message: '회원가입에 실패했습니다. 다시 시도해주세요.',
         };
+      } finally {
+        setIsLoading(false);
       }
-      setSession(data.session);
-      return {
-        ok: true,
-      };
-    } catch (error) {
-      return {
-        ok: false,
-        message: '회원가입에 실패했습니다. 다시 시도해주세요.',
-      };
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    [createNewUser],
+  );
 
-  const signInWithEmail = useCallback(async (input: ISignInWithEmailInput): Promise<IAuthActionResponse> => {
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabaseAuth.signInWithPassword({
-        email: input.email,
-        password: input.password,
-      });
-      const hasSignInError = error || !data.user || !data.session;
-      if (hasSignInError) {
+  const signInWithEmail = useCallback(
+    async (input: ISignInWithEmailInput): Promise<IAuthActionResponse> => {
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabaseAuth.signInWithPassword({
+          email: input.email,
+          password: input.password,
+        });
+        if (error || !data.user || !data.session) {
+          return {
+            ok: false,
+            message: '로그인에 실패했습니다. 다시 시도해주세요.',
+          };
+        }
+        const { user } = await checkExistingUser({ userId: data.user.id });
+        if (!user) {
+          return {
+            ok: false,
+            message: '로그인에 실패했습니다. 다시 시도해주세요.',
+          };
+        }
+        setAppUser(user);
+        setSession(data.session);
+        return {
+          ok: true,
+        };
+      } catch (error) {
         return {
           ok: false,
           message: '로그인에 실패했습니다. 다시 시도해주세요.',
         };
+      } finally {
+        setIsLoading(false);
       }
-      setSession(data.session);
-      return {
-        ok: true,
-      };
-    } catch (error) {
-      return {
-        ok: false,
-        message: '로그인에 실패했습니다. 다시 시도해주세요.',
-      };
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    [checkExistingUser],
+  );
 
   const signInWithGoogle = useCallback(async (): Promise<IAuthActionResponse> => {
     try {
@@ -133,6 +215,15 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
           message: '구글 로그인에 실패했습니다. 다시 시도해주세요.',
         };
       }
+      const { data: userData } = await supabaseAuth.getUser();
+      if (!userData.user) {
+        return {
+          ok: false,
+          message: '구글 로그인에 실패했습니다. 다시 시도해주세요.',
+        };
+      }
+      const { user } = await createNewUser({ userId: userData.user.id, name: userData.user.user_metadata['name'] });
+
       return {
         ok: true,
       };
@@ -144,7 +235,7 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [createNewUser]);
 
   const signInWithApple = useCallback(async (): Promise<IAuthActionResponse> => {
     try {
@@ -220,6 +311,7 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
     isMountedRef.current = false;
     subscriptionRef.current?.unsubscribe();
   });
+
   return (
     <AuthContext.Provider
       value={{

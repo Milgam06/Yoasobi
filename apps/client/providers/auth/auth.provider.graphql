@@ -1,6 +1,23 @@
-mutation SignUpUser($input: CreateUserInputDto!) {
+mutation CreateUser($input: CreateUserInputDto!) {
   createUser(input: $input) {
-    userId
-    createdAt
+    user {
+      id
+      name
+      timezone
+      createdAt
+      updatedAt
+    }
+  }
+}
+
+query getExistingUser($input: GetUserInputDto!) {
+  getUser(input: $input) {
+    user {
+      id
+      name
+      timezone
+      createdAt
+      updatedAt
+    }
   }
 }

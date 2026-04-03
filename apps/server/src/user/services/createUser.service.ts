@@ -11,17 +11,14 @@ export class CreateUserService {
     name,
     timezone,
   }: CreateUserInputDto): Promise<CreateUserOutputDto> {
-    const { id, createdAt } = await this.prismaService.user.create({
+    const user = await this.prismaService.user.create({
       data: {
         id: userId,
         name,
         timezone,
       },
-      select: {
-        id: true,
-        createdAt: true,
-      },
     });
-    return { userId: id, createdAt };
+
+    return { user };
   }
 }

@@ -37,12 +37,7 @@ type GetYoasobiOutputDto {
 }
 
 type CreateUserOutputDto {
-  userId: String!
-  createdAt: String!
-}
-
-type GetUserOutputDto {
-  user: UserEntity
+  user: UserEntity!
 }
 
 type UserEntity {
@@ -51,6 +46,10 @@ type UserEntity {
   timezone: String!
   createdAt: DateTime!
   updatedAt: DateTime!
+}
+
+type GetUserOutputDto {
+  user: UserEntity
 }
 
 type Query {

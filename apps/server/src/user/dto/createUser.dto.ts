@@ -1,5 +1,6 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
-import { IsDate, IsString, IsTimeZone, IsUUID } from 'class-validator';
+import { IsString, IsTimeZone, IsUUID } from 'class-validator';
+import { UserEntity } from 'entity';
 
 @InputType()
 export class CreateUserInputDto {
@@ -18,11 +19,6 @@ export class CreateUserInputDto {
 
 @ObjectType()
 export class CreateUserOutputDto {
-  @Field(() => String)
-  @IsUUID()
-  userId: string;
-
-  @Field(() => String)
-  @IsDate()
-  createdAt: Date;
+  @Field(() => UserEntity)
+  user: UserEntity;
 }
