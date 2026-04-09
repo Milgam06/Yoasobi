@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons/faUser';
 import { faAt } from '@fortawesome/free-solid-svg-icons/faAt';
 import { faKey } from '@fortawesome/free-solid-svg-icons/faKey';
-import { supabaseAuth, useCheckUserLazyQuery, useSignUpUserMutation } from '@/libs';
+import { useAuth } from '@/providers';
 
 type IAuthType = 'login' | 'signUp';
 
@@ -85,7 +85,7 @@ const LoginBox = memo<ILoginBoxProps>(
             </Text>
             <Separator width="$fluid" borderColor="$colors.cloudGray" />
           </Stack>
-          <Stack width="$fluid" borderWidth={1} gap="$size.x4">
+          <Stack width="$fluid" gap="$size.x4">
             <BlurBox>
               <Stack width="$fluid" gap="$size.x4">
                 <Text fontSize="$7" fontWeight="$600" color="$colors.moonSoftWhite">
@@ -391,6 +391,7 @@ const SignUpBox = memo<ISignUpBoxProps>(
 );
 
 export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
+  const { signUpWithEmail, signInWithEmail } = useAuth();
   const [currentAuthType, setCurrentAuthType] = useState<IAuthType>(authType);
   const [loginFormData, setLoginFormData] = useState<ILoginFormType>({
     email: '',
@@ -401,8 +402,6 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
     password: '',
     nickname: '',
   });
-  const [signUpUserMutation] = useSignUpUserMutation();
-  const [checkUserQuery] = useCheckUserLazyQuery();
 
   const { isCurrentAuthTypeLogin, isCurrentAuthTypeSignUp } = useMemo(() => {
     const isCurrentAuthTypeLogin = currentAuthType === 'login';
@@ -413,64 +412,6 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
     };
   }, [currentAuthType]);
 
-  const createNewUser = useCallback(async () => {
-    const { data: supabaseData, error: supabaseError } = await supabaseAuth.signUp({
-      email: signUpFormData.email,
-      password: signUpFormData.password,
-      options: {
-        data: {
-          name: signUpFormData.nickname,
-        },
-      },
-    });
-
-    if (supabaseError || supabaseData.user === null) {
-      console.error(supabaseError);
-      return;
-    }
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-    const { data: signUpUserMutationData, errors: signUpUserMutationErrors } = await signUpUserMutation({
-      variables: {
-        input: {
-          userId: supabaseData.user.id,
-          name: signUpFormData.nickname,
-          timezone,
-        },
-      },
-    });
-    if (signUpUserMutationErrors) {
-      console.error(signUpUserMutationErrors);
-      return;
-    }
-
-    console.log(signUpUserMutationData);
-  }, [signUpFormData.email, signUpFormData.nickname, signUpFormData.password, signUpUserMutation]);
-
-  const signInUser = useCallback(async () => {
-    const { data: supabaseData, error: supabaseError } = await supabaseAuth.signInWithPassword({
-      email: loginFormData.email,
-      password: loginFormData.password,
-    });
-
-    if (supabaseError || supabaseData.user === null) {
-      console.error(supabaseError);
-      return;
-    }
-    const { data: checkUserQueryData, error: checkUserQueryError } = await checkUserQuery({
-      variables: {
-        input: {
-          userId: supabaseData.user.id,
-        },
-      },
-    });
-    if (checkUserQueryError) {
-      console.error(checkUserQueryError);
-      return;
-    }
-    console.log(checkUserQueryData);
-  }, [checkUserQuery, loginFormData.email, loginFormData.password]);
-
   const handlePressConvertAuthType = useCallback(() => {
     setCurrentAuthType((prev) => {
       const isPrevAuthTypeLogin = prev === 'login';
@@ -478,11 +419,11 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
     });
   }, []);
 
-  const handlePressSignIn = useCallback(() => {
+  const handlePressAuthTypeSignIn = useCallback(() => {
     setCurrentAuthType('login');
   }, []);
 
-  const handlePressSignUp = useCallback(() => {
+  const handlePressAuthTypeSignUp = useCallback(() => {
     setCurrentAuthType('signUp');
   }, []);
 
@@ -531,6 +472,29 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
     });
   }, []);
 
+  const handlePressLoginWithEmail = useCallback(async () => {
+    const response = await signInWithEmail({
+      email: loginFormData.email,
+      password: loginFormData.password,
+    });
+    if (!response.ok) {
+      console.error(response.message);
+      return;
+    }
+  }, [loginFormData.email, loginFormData.password, signInWithEmail]);
+
+  const handlePressSignUpWithEmail = useCallback(async () => {
+    const response = await signUpWithEmail({
+      email: signUpFormData.email,
+      password: signUpFormData.password,
+      name: signUpFormData.nickname,
+    });
+    if (!response.ok) {
+      console.error(response.message);
+      return;
+    }
+  }, [signUpFormData.email, signUpFormData.password, signUpFormData.nickname, signUpWithEmail]);
+
   return (
     <LinearGradientLayout screenEdge={['top']} hasHeader>
       <KeyboardAvoidingView
@@ -554,7 +518,7 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
                     py="$size.x2_5"
                     animation="quicker"
                     style={{ borderRadius: 8 }}
-                    onPress={handlePressSignIn}>
+                    onPress={handlePressAuthTypeSignIn}>
                     <Text
                       fontSize="$7"
                       fontWeight="$900"
@@ -572,7 +536,7 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
                     py="$size.x2_5"
                     animation="quicker"
                     style={{ borderRadius: 8 }}
-                    onPress={handlePressSignUp}>
+                    onPress={handlePressAuthTypeSignUp}>
                     <Text
                       fontSize="$7"
                       fontWeight="$900"
@@ -590,7 +554,7 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
                 password={loginFormData.password}
                 onChangeEmail={handleChangeLoginEmail}
                 onChangePassword={handleChangeLoginPassword}
-                onPressLogin={() => {}}
+                onPressLogin={handlePressLoginWithEmail}
                 onPressConvertAuthType={handlePressConvertAuthType}
               />
             ) : (
@@ -601,7 +565,7 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
                 onChangeEmail={handleChangeSignUpEmail}
                 onChangePassword={handleChangeSignUpPassword}
                 onChangeNickname={handleChangeSignUpNickname}
-                onPressSignUp={() => {}}
+                onPressSignUp={handlePressSignUpWithEmail}
                 onPressConvertAuthType={handlePressConvertAuthType}
               />
             )}

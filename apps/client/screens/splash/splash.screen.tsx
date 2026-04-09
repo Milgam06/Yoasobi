@@ -1,4 +1,5 @@
 import { DefaultLayout } from '@/components';
+import { useAuth } from '@/providers';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { memo, useCallback, useState } from 'react';
@@ -8,6 +9,7 @@ import { LinearGradient } from 'tamagui/linear-gradient';
 
 export const SplashScreen = memo(() => {
   const route = useRouter();
+  const { session } = useAuth();
   const [isBackgroundLoaded, setIsBackgroundLoaded] = useState<boolean>(false);
 
   const handleLoadBackground = useCallback(() => {
@@ -19,7 +21,11 @@ export const SplashScreen = memo(() => {
       return;
     }
     const routeTimeout = setTimeout(() => {
-      route.replace('/(tabs)/home');
+      if (session) {
+        route.push('/(tabs)/home');
+      } else {
+        route.push('/greeting/greeting');
+      }
     }, 3000);
 
     return () => {

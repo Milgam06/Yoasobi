@@ -1,6 +1,6 @@
 import { supabaseAuth, useCreateUserMutation, useGetExistingUserLazyQuery, UserEntity } from '@/libs';
 import { Session, User } from '@supabase/supabase-js';
-import { createContext, memo, ReactNode, useCallback, useRef, useState } from 'react';
+import { createContext, memo, ReactNode, useCallback, useContext, useRef, useState } from 'react';
 import { useDidMount, useWillUnmount } from 'rooks';
 
 type ICreateNewUserInput = {
@@ -74,11 +74,13 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
         },
       });
       if (error || !data) {
+        console.error('Failed to fetch user:', error);
         throw new Error('Failed to fetch user');
       }
       const user = data.getUser.user;
       if (!user) {
-        throw new Error('User not found');
+        //TODO(@Milgam06): 회원가입 직후 사용자 정보가 바로 조회되지 않는 문제 해결하기
+        throw new Error('User not found, But why?');
       }
       setAppUser(user);
       return user;
@@ -93,12 +95,14 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
 
   const createNewUser = useCallback<ICreateNewUser>(
     async ({ userId, name }) => {
-      const { data: existingData } = await getExistingUserQuery({
+      const { data: existingData, error } = await getExistingUserQuery({
         variables: {
           input: { userId },
         },
+        fetchPolicy: 'network-only',
       });
-      if (existingData?.getUser.user) {
+      if (existingData?.getUser.user || error) {
+        console.warn('User already exists or failed to check existing user:', error);
         return;
       }
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -132,6 +136,7 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
           },
         });
         if (error || !data.user || !data.session) {
+          console.error('회원가입 실패 1:', error);
           return {
             ok: false,
             message: '회원가입에 실패했습니다. 다시 시도해주세요.',
@@ -144,6 +149,7 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
           ok: true,
         };
       } catch (error) {
+        console.error('회원가입 실패 2:', error);
         return {
           ok: false,
           message: '회원가입에 실패했습니다. 다시 시도해주세요.',
@@ -320,3 +326,11 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
     </AuthContext.Provider>
   );
 });
+
+export const useAuth = (): IAuthContextProps => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
