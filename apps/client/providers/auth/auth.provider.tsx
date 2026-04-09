@@ -7,17 +7,7 @@ type ICreateNewUserInput = {
   userId: string;
   name: string;
 };
-type ICreateNewUser = (input: ICreateNewUserInput) => Promise<{
-  user: UserEntity;
-}>;
-
-type ICheckExistingUserInput = {
-  userId: string;
-};
-type ICheckExistingUser = (input: ICheckExistingUserInput) => Promise<{
-  isUserExists: boolean;
-  user: UserEntity | null;
-}>;
+type ICreateNewUser = (input: ICreateNewUserInput) => Promise<void>;
 
 export type IAuthActionResponse =
   | {
@@ -74,13 +64,8 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
   const userId = session?.user.id || null;
   const authUser = session?.user || null;
 
-  const clearAuthState = useCallback(() => {
-    setSession(null);
-    setAppUser(null);
-  }, []);
-
-  const checkExistingUser = useCallback<ICheckExistingUser>(
-    async ({ userId }) => {
+  const syncAppUser = useCallback(
+    async (userId: string): Promise<UserEntity> => {
       const { data, error } = await getExistingUserQuery({
         variables: {
           input: {
@@ -89,27 +74,35 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
         },
       });
       if (error || !data) {
-        throw new Error('Failed to check existing user');
+        throw new Error('Failed to fetch user');
       }
-      const isUserExists = !!data.getUser.user;
-      return {
-        isUserExists: isUserExists,
-        user: data.getUser.user ?? null,
-      };
+      const user = data.getUser.user;
+      if (!user) {
+        throw new Error('User not found');
+      }
+      setAppUser(user);
+      return user;
     },
     [getExistingUserQuery],
   );
 
+  const clearAuthState = useCallback(() => {
+    setSession(null);
+    setAppUser(null);
+  }, []);
+
   const createNewUser = useCallback<ICreateNewUser>(
     async ({ userId, name }) => {
-      const { isUserExists, user } = await checkExistingUser({ userId });
-      if (isUserExists && user) {
-        return {
-          user,
-        };
+      const { data: existingData } = await getExistingUserQuery({
+        variables: {
+          input: { userId },
+        },
+      });
+      if (existingData?.getUser.user) {
+        return;
       }
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const { data, errors } = await createUserMutation({
+      const { errors } = await createUserMutation({
         variables: {
           input: {
             userId,
@@ -118,14 +111,11 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
           },
         },
       });
-      if (errors || !data) {
+      if (errors) {
         throw new Error('Failed to create user');
       }
-      return {
-        user: data.createUser.user,
-      };
     },
-    [checkExistingUser, createUserMutation],
+    [getExistingUserQuery, createUserMutation],
   );
 
   const signUpWithEmail = useCallback(
@@ -147,8 +137,8 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
             message: '회원가입에 실패했습니다. 다시 시도해주세요.',
           };
         }
-        const { user } = await createNewUser({ userId: data.user.id, name: input.name });
-        setAppUser(user);
+        await createNewUser({ userId: data.user.id, name: input.name });
+        await syncAppUser(data.user.id);
         setSession(data.session);
         return {
           ok: true,
@@ -162,7 +152,7 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
         setIsLoading(false);
       }
     },
-    [createNewUser],
+    [createNewUser, syncAppUser],
   );
 
   const signInWithEmail = useCallback(
@@ -179,14 +169,7 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
             message: '로그인에 실패했습니다. 다시 시도해주세요.',
           };
         }
-        const { user } = await checkExistingUser({ userId: data.user.id });
-        if (!user) {
-          return {
-            ok: false,
-            message: '로그인에 실패했습니다. 다시 시도해주세요.',
-          };
-        }
-        setAppUser(user);
+        await syncAppUser(data.user.id);
         setSession(data.session);
         return {
           ok: true,
@@ -200,7 +183,7 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
         setIsLoading(false);
       }
     },
-    [checkExistingUser],
+    [syncAppUser],
   );
 
   const signInWithGoogle = useCallback(async (): Promise<IAuthActionResponse> => {
@@ -222,8 +205,8 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
           message: '구글 로그인에 실패했습니다. 다시 시도해주세요.',
         };
       }
-      const { user } = await createNewUser({ userId: userData.user.id, name: userData.user.user_metadata['name'] });
-
+      await createNewUser({ userId: userData.user.id, name: userData.user.user_metadata['name'] });
+      await syncAppUser(userData.user.id);
       return {
         ok: true,
       };
@@ -235,12 +218,12 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [createNewUser]);
+  }, [createNewUser, syncAppUser]);
 
   const signInWithApple = useCallback(async (): Promise<IAuthActionResponse> => {
     try {
       setIsLoading(true);
-      console.log('애플 로그인 시도');
+      //TODO(@Milgam06): Apple 로그인 구현
       return {
         ok: true,
       };
@@ -278,7 +261,10 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
         return;
       }
 
-      setSession(data.session);
+      if (data.session) {
+        setSession(data.session);
+        await syncAppUser(data.session.user.id);
+      }
       setIsReady(true);
     } catch (error) {
       if (!isMountedRef.current) {
@@ -288,13 +274,13 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
       clearAuthState();
       setIsReady(true);
     }
-  }, [clearAuthState]);
+  }, [clearAuthState, syncAppUser]);
 
   useDidMount(async () => {
     await bootstrapAuth();
     const {
       data: { subscription },
-    } = supabaseAuth.onAuthStateChange((event, session) => {
+    } = supabaseAuth.onAuthStateChange(async (event, session) => {
       if (!isMountedRef.current) {
         return;
       }
@@ -303,6 +289,9 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
         return;
       }
       setSession(session);
+      if (session) {
+        await syncAppUser(session.user.id);
+      }
     });
     subscriptionRef.current = subscription;
   });
