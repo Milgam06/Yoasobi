@@ -48,6 +48,10 @@ type UserEntity {
   updatedAt: DateTime!
 }
 
+type DeleteUserOutputDto {
+  success: Boolean!
+}
+
 type GetUserOutputDto {
   user: UserEntity
 }
@@ -68,6 +72,7 @@ input GetYoasobiInputDto {
 
 type Mutation {
   createUser(input: CreateUserInputDto!): CreateUserOutputDto!
+  deleteUser(input: DeleteUserInputDto!): DeleteUserOutputDto!
   createYoasobi(input: CreateYoasobiInputDto!): CreateYoasobiOutputDto!
 }
 
@@ -75,6 +80,10 @@ input CreateUserInputDto {
   userId: String!
   name: String!
   timezone: String!
+}
+
+input DeleteUserInputDto {
+  userId: String!
 }
 
 input CreateYoasobiInputDto {
