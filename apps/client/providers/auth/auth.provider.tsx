@@ -148,7 +148,6 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
         }
         const user = await createNewUser({ userId: data.user.id, name: input.name });
         setAppUser(user);
-        setSession(data.session);
         return {
           ok: true,
         };
@@ -166,36 +165,31 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
     [createNewUser],
   );
 
-  const signInWithEmail = useCallback(
-    async (input: ISignInWithEmailInput): Promise<IAuthActionResponse> => {
-      try {
-        setIsLoading(true);
-        const { data, error } = await supabaseAuth.signInWithPassword({
-          email: input.email,
-          password: input.password,
-        });
-        if (error || !data.user || !data.session) {
-          return {
-            ok: false,
-            message: '로그인에 실패했습니다. 다시 시도해주세요.',
-          };
-        }
-        await syncAppUser(data.user.id);
-        setSession(data.session);
-        return {
-          ok: true,
-        };
-      } catch (error) {
+  const signInWithEmail = useCallback(async (input: ISignInWithEmailInput): Promise<IAuthActionResponse> => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabaseAuth.signInWithPassword({
+        email: input.email,
+        password: input.password,
+      });
+      if (error || !data.user || !data.session) {
         return {
           ok: false,
           message: '로그인에 실패했습니다. 다시 시도해주세요.',
         };
-      } finally {
-        setIsLoading(false);
       }
-    },
-    [syncAppUser],
-  );
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        message: '로그인에 실패했습니다. 다시 시도해주세요.',
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const signInWithGoogle = useCallback(async (): Promise<IAuthActionResponse> => {
     try {
