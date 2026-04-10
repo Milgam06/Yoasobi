@@ -9,6 +9,7 @@ import { faUser } from '@fortawesome/free-solid-svg-icons/faUser';
 import { faAt } from '@fortawesome/free-solid-svg-icons/faAt';
 import { faKey } from '@fortawesome/free-solid-svg-icons/faKey';
 import { useAuth } from '@/providers';
+import { useRouter } from 'expo-router';
 
 type IAuthType = 'login' | 'signUp';
 
@@ -391,6 +392,7 @@ const SignUpBox = memo<ISignUpBoxProps>(
 );
 
 export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
+  const route = useRouter();
   const { signUpWithEmail, signInWithEmail } = useAuth();
   const [currentAuthType, setCurrentAuthType] = useState<IAuthType>(authType);
   const [loginFormData, setLoginFormData] = useState<ILoginFormType>({
@@ -481,7 +483,8 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
       console.error(response.message);
       return;
     }
-  }, [loginFormData.email, loginFormData.password, signInWithEmail]);
+    route.push('/(tabs)/home');
+  }, [loginFormData.email, loginFormData.password, route, signInWithEmail]);
 
   const handlePressSignUpWithEmail = useCallback(async () => {
     const response = await signUpWithEmail({
@@ -493,7 +496,8 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
       console.error(response.message);
       return;
     }
-  }, [signUpFormData.email, signUpFormData.password, signUpFormData.nickname, signUpWithEmail]);
+    route.push('/(tabs)/home');
+  }, [signUpWithEmail, signUpFormData.email, signUpFormData.password, signUpFormData.nickname, route]);
 
   return (
     <LinearGradientLayout screenEdge={['top']} hasHeader>
