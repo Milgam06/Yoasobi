@@ -7,7 +7,7 @@ type ICreateNewUserInput = {
   userId: string;
   name: string;
 };
-type ICreateNewUser = (input: ICreateNewUserInput) => Promise<void>;
+type ICreateNewUser = (input: ICreateNewUserInput) => Promise<UserEntity>;
 
 export type IAuthActionResponse =
   | {
@@ -79,8 +79,7 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
       }
       const user = data.getUser.user;
       if (!user) {
-        //TODO(@Milgam06): 회원가입 직후 사용자 정보가 바로 조회되지 않는 문제 해결하기
-        throw new Error('User not found, But why?');
+        throw new Error('User not found');
       }
       setAppUser(user);
       return user;
@@ -101,12 +100,14 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
         },
         fetchPolicy: 'network-only',
       });
-      if (existingData?.getUser.user || error) {
-        console.warn('User already exists or failed to check existing user:', error);
-        return;
+      if (error) {
+        throw new Error('Failed to check existing user');
+      }
+      if (existingData?.getUser.user) {
+        return existingData.getUser.user;
       }
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const { errors } = await createUserMutation({
+      const { data: createData, errors } = await createUserMutation({
         variables: {
           input: {
             userId,
@@ -115,9 +116,10 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
           },
         },
       });
-      if (errors) {
+      if (errors || !createData) {
         throw new Error('Failed to create user');
       }
+      return createData.createUser.user;
     },
     [getExistingUserQuery, createUserMutation],
   );
@@ -142,8 +144,8 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
             message: '회원가입에 실패했습니다. 다시 시도해주세요.',
           };
         }
-        await createNewUser({ userId: data.user.id, name: input.name });
-        await syncAppUser(data.user.id);
+        const user = await createNewUser({ userId: data.user.id, name: input.name });
+        setAppUser(user);
         setSession(data.session);
         return {
           ok: true,
@@ -158,7 +160,7 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
         setIsLoading(false);
       }
     },
-    [createNewUser, syncAppUser],
+    [createNewUser],
   );
 
   const signInWithEmail = useCallback(
@@ -211,8 +213,8 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
           message: '구글 로그인에 실패했습니다. 다시 시도해주세요.',
         };
       }
-      await createNewUser({ userId: userData.user.id, name: userData.user.user_metadata['name'] });
-      await syncAppUser(userData.user.id);
+      const user = await createNewUser({ userId: userData.user.id, name: userData.user.user_metadata['name'] });
+      setAppUser(user);
       return {
         ok: true,
       };
@@ -224,7 +226,7 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [createNewUser, syncAppUser]);
+  }, [createNewUser]);
 
   const signInWithApple = useCallback(async (): Promise<IAuthActionResponse> => {
     try {
