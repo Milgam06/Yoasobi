@@ -10,6 +10,7 @@ import { faAt } from '@fortawesome/free-solid-svg-icons/faAt';
 import { faKey } from '@fortawesome/free-solid-svg-icons/faKey';
 import { useAuth } from '@/providers';
 import { useRouter } from 'expo-router';
+import { useDidUpdate } from 'rooks';
 
 type IAuthType = 'login' | 'signUp';
 
@@ -393,7 +394,7 @@ const SignUpBox = memo<ISignUpBoxProps>(
 
 export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
   const route = useRouter();
-  const { signUpWithEmail, signInWithEmail } = useAuth();
+  const { appUser, signUpWithEmail, signInWithEmail } = useAuth();
   const [currentAuthType, setCurrentAuthType] = useState<IAuthType>(authType);
   const [loginFormData, setLoginFormData] = useState<ILoginFormType>({
     email: '',
@@ -483,8 +484,7 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
       console.error(response.message);
       return;
     }
-    route.push('/(tabs)/home');
-  }, [loginFormData.email, loginFormData.password, route, signInWithEmail]);
+  }, [loginFormData.email, loginFormData.password, signInWithEmail]);
 
   const handlePressSignUpWithEmail = useCallback(async () => {
     const response = await signUpWithEmail({
@@ -496,8 +496,13 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
       console.error(response.message);
       return;
     }
-    route.push('/(tabs)/home');
-  }, [signUpWithEmail, signUpFormData.email, signUpFormData.password, signUpFormData.nickname, route]);
+  }, [signUpWithEmail, signUpFormData.email, signUpFormData.password, signUpFormData.nickname]);
+
+  useDidUpdate(() => {
+    if (appUser) {
+      route.push('/(tabs)/home');
+    }
+  }, [appUser]);
 
   return (
     <LinearGradientLayout screenEdge={['top']} hasHeader>
