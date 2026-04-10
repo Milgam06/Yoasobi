@@ -56,8 +56,13 @@ type GetUserOutputDto {
   user: UserEntity
 }
 
+type GetUsersOutputDto {
+  users: [UserEntity!]!
+}
+
 type Query {
   getUser(input: GetUserInputDto!): GetUserOutputDto!
+  getUsers: GetUsersOutputDto!
   getYoasobi(input: GetYoasobiInputDto!): GetYoasobiOutputDto!
 }
 
