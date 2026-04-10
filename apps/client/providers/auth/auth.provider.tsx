@@ -57,6 +57,7 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
 
   const subscriptionRef = useRef<{ unsubscribe: () => void } | null>(null);
   const isMountedRef = useRef<boolean>(true);
+  const isSigningUpRef = useRef<boolean>(false);
 
   const [getExistingUserQuery] = useGetExistingUserLazyQuery();
   const [createUserMutation] = useCreateUserMutation();
@@ -128,6 +129,7 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
     async (input: ISignUpWithEmailInput): Promise<IAuthActionResponse> => {
       try {
         setIsLoading(true);
+        isSigningUpRef.current = true;
         const { data, error } = await supabaseAuth.signUp({
           email: input.email,
           password: input.password,
@@ -157,6 +159,7 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
           message: '회원가입에 실패했습니다. 다시 시도해주세요.',
         };
       } finally {
+        isSigningUpRef.current = false;
         setIsLoading(false);
       }
     },
@@ -294,6 +297,9 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
       }
       if (event === 'SIGNED_OUT') {
         clearAuthState();
+        return;
+      }
+      if (isSigningUpRef.current) {
         return;
       }
       setSession(session);
