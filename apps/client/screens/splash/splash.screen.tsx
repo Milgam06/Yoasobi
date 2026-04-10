@@ -9,7 +9,7 @@ import { LinearGradient } from 'tamagui/linear-gradient';
 
 export const SplashScreen = memo(() => {
   const route = useRouter();
-  const { session } = useAuth();
+  const { session, isReady } = useAuth();
   const [isBackgroundLoaded, setIsBackgroundLoaded] = useState<boolean>(false);
 
   const handleLoadBackground = useCallback(() => {
@@ -17,7 +17,7 @@ export const SplashScreen = memo(() => {
   }, []);
 
   useDidUpdate(() => {
-    if (!isBackgroundLoaded) {
+    if (!isBackgroundLoaded || !isReady) {
       return;
     }
     const routeTimeout = setTimeout(() => {
