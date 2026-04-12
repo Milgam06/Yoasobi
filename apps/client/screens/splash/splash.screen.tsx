@@ -31,7 +31,7 @@ export const SplashScreen = memo(() => {
     return () => {
       clearTimeout(routeTimeout);
     };
-  }, [isBackgroundLoaded]);
+  }, [isBackgroundLoaded, isReady, session]);
 
   return (
     <DefaultLayout isBlur onBackgroundLoad={handleLoadBackground}>
