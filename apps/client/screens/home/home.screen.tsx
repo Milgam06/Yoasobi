@@ -21,6 +21,7 @@ import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/d
 import { useDidMount } from 'rooks';
 import { Button, ColorTokens, Progress, ScrollView, Separator, Sheet, Stack, Switch, Text } from 'tamagui';
 import { Platform } from 'react-native';
+import { useAuth } from '@/providers';
 
 type IYoasobi = {
   id: string;
@@ -447,6 +448,7 @@ const YoasobiResultBox = memo<IYoasobiResultBoxProps>(({ yoasobiDay, yoasobiDate
 });
 
 export const HomeScreen = memo(() => {
+  const { userId, session } = useAuth();
   const today = new Date();
   const [isMidnightNotificationEnabled, setIsMidnightNotificationEnabled] = useState<boolean>(false);
   const [existedYoasobi, setExistedYoasobi] = useState<IYoasobi | null>(null);
@@ -562,10 +564,13 @@ export const HomeScreen = memo(() => {
   }, [getWeeklyYoasobiQuery, weekStartDate]);
 
   const createNewYoasobi = useCallback(async () => {
+    if (!userId) {
+      return;
+    }
     const { data } = await createYoasobiMutation({
       variables: {
         input: {
-          userId: 'currentUserId',
+          userId,
           dayOfWeek: selectedDayOfWeek,
           yoasobiDate: newYoasobiDate,
           alarmTime: newYoasobiDate,
@@ -574,13 +579,14 @@ export const HomeScreen = memo(() => {
       },
     });
     return data;
-  }, [createYoasobiMutation, duration, newYoasobiDate, selectedDayOfWeek]);
+  }, [createYoasobiMutation, duration, newYoasobiDate, selectedDayOfWeek, userId]);
 
   const handlePressCreateYoasobi = useCallback(async () => {
     await createNewYoasobi();
   }, [createNewYoasobi]);
 
   useDidMount(async () => {
+    console.log('session, userId in HomeScreen:', session, userId);
     await fetchWeeklyYoasobi();
   });
 

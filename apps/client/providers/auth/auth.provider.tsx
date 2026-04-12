@@ -294,6 +294,7 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
         return;
       }
       if (isSigningUpRef.current) {
+        setSession(session);
         return;
       }
       setSession(session);
