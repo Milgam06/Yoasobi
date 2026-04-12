@@ -53,6 +53,15 @@ export enum DayOfWeek {
   Wednesday = 'WEDNESDAY'
 }
 
+export type DeleteUserInputDto = {
+  userId: Scalars['String']['input'];
+};
+
+export type DeleteUserOutputDto = {
+  __typename?: 'DeleteUserOutputDto';
+  success: Scalars['Boolean']['output'];
+};
+
 export type GetUserInputDto = {
   userId: Scalars['String']['input'];
 };
@@ -60,6 +69,11 @@ export type GetUserInputDto = {
 export type GetUserOutputDto = {
   __typename?: 'GetUserOutputDto';
   user?: Maybe<UserEntity>;
+};
+
+export type GetUsersOutputDto = {
+  __typename?: 'GetUsersOutputDto';
+  users: Array<UserEntity>;
 };
 
 export type GetYoasobiInputDto = {
@@ -76,6 +90,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   createUser: CreateUserOutputDto;
   createYoasobi: CreateYoasobiOutputDto;
+  deleteUser: DeleteUserOutputDto;
 };
 
 
@@ -88,9 +103,15 @@ export type MutationCreateYoasobiArgs = {
   input: CreateYoasobiInputDto;
 };
 
+
+export type MutationDeleteUserArgs = {
+  input: DeleteUserInputDto;
+};
+
 export type Query = {
   __typename?: 'Query';
   getUser: GetUserOutputDto;
+  getUsers: GetUsersOutputDto;
   getYoasobi: GetYoasobiOutputDto;
 };
 
