@@ -448,7 +448,7 @@ const YoasobiResultBox = memo<IYoasobiResultBoxProps>(({ yoasobiDay, yoasobiDate
 });
 
 export const HomeScreen = memo(() => {
-  const { userId, session } = useAuth();
+  const { userId } = useAuth();
   const today = new Date();
   const [isMidnightNotificationEnabled, setIsMidnightNotificationEnabled] = useState<boolean>(false);
   const [existedYoasobi, setExistedYoasobi] = useState<IYoasobi | null>(null);
@@ -586,7 +586,6 @@ export const HomeScreen = memo(() => {
   }, [createNewYoasobi]);
 
   useDidMount(async () => {
-    console.log('session, userId in HomeScreen:', session, userId);
     await fetchWeeklyYoasobi();
   });
 
