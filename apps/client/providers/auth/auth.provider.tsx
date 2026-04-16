@@ -75,7 +75,6 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
         },
       });
       if (error || !data) {
-        console.error('Failed to fetch user:', error);
         throw new Error('Failed to fetch user');
       }
       const user = data.getUser.user;
@@ -275,7 +274,6 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
       if (!isMountedRef.current) {
         return;
       }
-      console.error('세션 정보 가져오기 실패:', error);
       clearAuthState();
       setIsReady(true);
     }
