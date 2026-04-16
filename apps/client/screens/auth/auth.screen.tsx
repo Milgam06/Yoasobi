@@ -1,11 +1,12 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
-import { BlurBox, LinearGradientLayout } from '@/components';
+import { Alert, BlurBox, LinearGradientLayout } from '@/components';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { Button, Input, ScrollView, Separator, Stack, Text } from 'tamagui';
 import { signInWithApple } from '@/hooks/auth/signInWithApple.hook';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons/faUser';
+import { faExclamation } from '@fortawesome/free-solid-svg-icons/faExclamation';
 import { faAt } from '@fortawesome/free-solid-svg-icons/faAt';
 import { faKey } from '@fortawesome/free-solid-svg-icons/faKey';
 import { useAuth } from '@/providers';
@@ -29,6 +30,11 @@ type ISignUpFormType = {
   password: string;
 };
 
+type IAuthErrorType = {
+  authType: IAuthType;
+  message: string;
+};
+
 type ILoginBoxProps = {
   email: string;
   password: string;
@@ -36,6 +42,7 @@ type ILoginBoxProps = {
   onChangePassword: (password: string) => void;
   onPressLogin: () => void;
   onPressConvertAuthType: () => void;
+  onError: (error: IAuthErrorType) => void;
 };
 
 type ISignUpBoxProps = {
@@ -47,12 +54,13 @@ type ISignUpBoxProps = {
   onChangePassword: (password: string) => void;
   onPressSignUp: () => void;
   onPressConvertAuthType: () => void;
+  onError: (error: IAuthErrorType) => void;
 };
 
 const isPlatformAndroid = Platform.OS === 'android';
 
 const LoginBox = memo<ILoginBoxProps>(
-  ({ email, password, onChangeEmail, onChangePassword, onPressLogin, onPressConvertAuthType }) => {
+  ({ email, password, onChangeEmail, onChangePassword, onPressLogin, onPressConvertAuthType, onError }) => {
     const hasInputValues = email.length > 0 && password.length > 0;
     return (
       <Stack width="$fluid" flex={1} gap="$size.x6">
@@ -75,7 +83,8 @@ const LoginBox = memo<ILoginBoxProps>(
                 try {
                   await signInWithApple();
                 } catch (error) {
-                  console.error(error);
+                  const errorMessage = error instanceof Error ? error.message : 'Apple 로그인에 실패했습니다.';
+                  onError({ authType: 'login', message: errorMessage });
                 }
               }}
             />
@@ -212,6 +221,7 @@ const SignUpBox = memo<ISignUpBoxProps>(
     onChangePassword,
     onPressSignUp,
     onPressConvertAuthType,
+    onError,
   }) => {
     const hasInputValues = nickname.trim().length > 0 && email.trim().length > 0 && password.trim().length > 0;
     return (
@@ -235,7 +245,8 @@ const SignUpBox = memo<ISignUpBoxProps>(
                 try {
                   await signInWithApple();
                 } catch (error) {
-                  console.error(error);
+                  const errorMessage = error instanceof Error ? error.message : 'Apple 회원가입에 실패했습니다.';
+                  onError({ authType: 'signUp', message: errorMessage });
                 }
               }}
             />
@@ -405,6 +416,7 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
     password: '',
     nickname: '',
   });
+  const [authError, setAuthError] = useState<IAuthErrorType | null>({ authType: 'login', message: '로그인 오류' });
 
   const { isCurrentAuthTypeLogin, isCurrentAuthTypeSignUp } = useMemo(() => {
     const isCurrentAuthTypeLogin = currentAuthType === 'login';
@@ -416,6 +428,7 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
   }, [currentAuthType]);
 
   const handlePressConvertAuthType = useCallback(() => {
+    setAuthError(null);
     setCurrentAuthType((prev) => {
       const isPrevAuthTypeLogin = prev === 'login';
       return isPrevAuthTypeLogin ? 'signUp' : 'login';
@@ -423,10 +436,12 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
   }, []);
 
   const handlePressAuthTypeSignIn = useCallback(() => {
+    setAuthError(null);
     setCurrentAuthType('login');
   }, []);
 
   const handlePressAuthTypeSignUp = useCallback(() => {
+    setAuthError(null);
     setCurrentAuthType('signUp');
   }, []);
 
@@ -481,7 +496,7 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
       password: loginFormData.password,
     });
     if (!response.ok) {
-      console.error(response.message);
+      setAuthError({ authType: 'login', message: response.message });
       return;
     }
   }, [loginFormData.email, loginFormData.password, signInWithEmail]);
@@ -493,10 +508,18 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
       name: signUpFormData.nickname,
     });
     if (!response.ok) {
-      console.error(response.message);
+      setAuthError({ authType: 'signUp', message: response.message });
       return;
     }
   }, [signUpWithEmail, signUpFormData.email, signUpFormData.password, signUpFormData.nickname]);
+
+  const handleCloseAuthError = useCallback(() => {
+    setAuthError(null);
+  }, []);
+
+  const handleAuthError = useCallback(({ authType, message }: IAuthErrorType) => {
+    setAuthError({ authType, message });
+  }, []);
 
   useDidUpdate(() => {
     if (appUser) {
@@ -504,8 +527,46 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
     }
   }, [appUser]);
 
+  useDidUpdate(() => {
+    console.log('AuthScreen authError', authError);
+  }, [authError]);
+
   return (
     <LinearGradientLayout screenEdge={['top']} hasHeader>
+      {!!authError && (
+        <Alert isOpen={!!authError} alertPadding="$size.x4" isErrorAlert onClose={handleCloseAuthError}>
+          <Stack width="$fluid" gap="$size.x4">
+            <Stack width="$fluid" gap="$size.x3">
+              <Stack flexDirection="row" items="center" gap="$size.x2_5">
+                <Stack py="$size.x1_5" px="$size.x1" bg="#ff909057" style={{ borderRadius: 12 }}>
+                  <FontAwesomeIcon icon={faExclamation} size={24} color="#ff7474" />
+                </Stack>
+                <Text fontSize="$9" fontWeight="$900">
+                  {authError.authType === 'login' ? '로그인' : '회원가입'}에 실패했어요
+                </Text>
+              </Stack>
+              <Text fontSize="$5" color="$colors.cloudGray">
+                {authError.message}
+              </Text>
+            </Stack>
+            <Button
+              width="$fluid"
+              height="$fit"
+              py="$size.x2_5"
+              bg="$colors.lampYellow"
+              borderTopLeftRadius="$size.x3"
+              borderTopRightRadius="$size.x3"
+              borderBottomLeftRadius="$size.x3"
+              borderBottomRightRadius="$size.x3"
+              pressStyle={{ bg: '$colors.lampYellow', opacity: 0.8 }}
+              onPress={handleCloseAuthError}>
+              <Text fontSize="$6" fontWeight="$900" color="$colors.midnightPurple">
+                확인
+              </Text>
+            </Button>
+          </Stack>
+        </Alert>
+      )}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={isPlatformAndroid ? 'height' : 'padding'}
@@ -565,6 +626,7 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
                 onChangePassword={handleChangeLoginPassword}
                 onPressLogin={handlePressLoginWithEmail}
                 onPressConvertAuthType={handlePressConvertAuthType}
+                onError={handleAuthError}
               />
             ) : (
               <SignUpBox
@@ -576,6 +638,7 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
                 onChangeNickname={handleChangeSignUpNickname}
                 onPressSignUp={handlePressSignUpWithEmail}
                 onPressConvertAuthType={handlePressConvertAuthType}
+                onError={handleAuthError}
               />
             )}
           </Stack>

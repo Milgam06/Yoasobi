@@ -7,11 +7,12 @@ type IAlertProps = {
   onClose: () => void;
   alertPadding?: GetThemeValueForKey<'padding'> | number;
   bg?: GetThemeValueForKey<'backgroundColor'> | OpaqueColorValue;
+  isErrorAlert?: boolean;
   children: ReactNode;
 };
 
 export const Alert = memo<IAlertProps>(
-  ({ isOpen, onClose, alertPadding = '$size.x2', bg = '$colors.midnightPurple', children }) => {
+  ({ isOpen, onClose, alertPadding = '$size.x2', bg = '$colors.midnightPurple', isErrorAlert = false, children }) => {
     const handlePressCloseAlert = useCallback(() => {
       onClose();
     }, [onClose]);
@@ -28,10 +29,14 @@ export const Alert = memo<IAlertProps>(
           />
           <AlertDialog.Content
             bg={bg}
+            borderWidth={1}
+            borderColor={isErrorAlert ? '$colors.emberRed' : '$colors.cloudGray'}
             radiused={false}
             p={alertPadding}
+            y={0}
             enterStyle={{
-              scale: 0.98,
+              scale: 0.96,
+              y: 20,
             }}
             animation="200ms">
             <Stack>{children}</Stack>
