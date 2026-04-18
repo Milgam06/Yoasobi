@@ -332,8 +332,15 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
         return;
       }
       setSession(session);
-      if (session) {
-        await syncAppUser(session.user.id);
+      try {
+        if (session) {
+          await syncAppUser(session.user.id);
+        }
+      } catch (error) {
+        if (!isMountedRef.current) {
+          return;
+        }
+        clearAuthState();
       }
     });
     subscriptionRef.current = subscription;

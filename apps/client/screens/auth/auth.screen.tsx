@@ -244,7 +244,7 @@ const SignUpBox = memo<ISignUpBoxProps>(
                 buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
                 cornerRadius={8}
                 style={{ width: '100%', height: 52 }}
-                onPress={onPressSignUpWithApple}></AppleAuthentication.AppleAuthenticationButton>
+                onPress={onPressSignUpWithApple}/>
               <Stack flexDirection="row" width="$fluid" justify="center" items="center" gap="$size.x2" px="$size.x1">
                 <Separator width="$fluid" borderColor="$colors.cloudGray" />
                 <Text fontSize="$3" color="$colors.cloudGray">
