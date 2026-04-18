@@ -1,5 +1,6 @@
 import { supabaseAuth, useCreateUserMutation, useGetExistingUserLazyQuery, UserEntity } from '@/libs';
 import { Session, User } from '@supabase/supabase-js';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { createContext, memo, ReactNode, useCallback, useContext, useRef, useState } from 'react';
 import { useDidMount, useWillUnmount } from 'rooks';
 
@@ -139,7 +140,6 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
           },
         });
         if (error || !data.user || !data.session) {
-          console.error('회원가입 실패 1:', error);
           return {
             ok: false,
             message: '회원가입에 실패했습니다. 다시 시도해주세요.',
@@ -151,7 +151,6 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
           ok: true,
         };
       } catch (error) {
-        console.error('회원가입 실패 2:', error);
         return {
           ok: false,
           message: '회원가입에 실패했습니다. 다시 시도해주세요.',
@@ -227,7 +226,44 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
   const signInWithApple = useCallback(async (): Promise<IAuthActionResponse> => {
     try {
       setIsLoading(true);
-      //TODO(@Milgam06): Apple 로그인 구현
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      if (!credential.identityToken) {
+        return {
+          ok: false,
+          message: '애플 로그인에 실패했습니다. 다시 시도해주세요.',
+        };
+      }
+
+      const { data, error } = await supabaseAuth.signInWithIdToken({
+        provider: 'apple',
+        token: credential.identityToken,
+      });
+
+      if (error || !data.user || !data.session) {
+        return {
+          ok: false,
+          message: '애플 로그인에 실패했습니다. 다시 시도해주세요.',
+        };
+      }
+
+      const appleFullName = [
+        credential.fullName?.familyName,
+        credential.fullName?.givenName,
+        credential.fullName?.middleName,
+      ]
+        .filter(Boolean)
+        .join('');
+
+      const name = appleFullName || data.user.user_metadata['nickname'] || 'Apple User';
+
+      const user = await createNewUser({ userId: data.user.id, name });
+      setAppUser(user);
       return {
         ok: true,
       };
@@ -239,7 +275,7 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [createNewUser]);
 
   const signOut = useCallback(async () => {
     try {

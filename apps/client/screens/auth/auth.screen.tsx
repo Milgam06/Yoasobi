@@ -2,7 +2,6 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import { Alert, BlurBox, LinearGradientLayout } from '@/components';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { Button, Input, ScrollView, Separator, Stack, Text } from 'tamagui';
-import { signInWithApple } from '@/hooks/auth/signInWithApple.hook';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons/faUser';
@@ -42,7 +41,7 @@ type ILoginBoxProps = {
   onChangePassword: (password: string) => void;
   onPressLogin: () => void;
   onPressConvertAuthType: () => void;
-  onError: (error: IAuthErrorType) => void;
+  onPressLoginWithApple: () => void;
 };
 
 type ISignUpBoxProps = {
@@ -53,14 +52,22 @@ type ISignUpBoxProps = {
   onChangeEmail: (email: string) => void;
   onChangePassword: (password: string) => void;
   onPressSignUp: () => void;
+  onPressSignUpWithApple: () => void;
   onPressConvertAuthType: () => void;
-  onError: (error: IAuthErrorType) => void;
 };
 
 const isPlatformAndroid = Platform.OS === 'android';
 
 const LoginBox = memo<ILoginBoxProps>(
-  ({ email, password, onChangeEmail, onChangePassword, onPressLogin, onPressConvertAuthType, onError }) => {
+  ({
+    email,
+    password,
+    onChangeEmail,
+    onChangePassword,
+    onPressLogin,
+    onPressConvertAuthType,
+    onPressLoginWithApple,
+  }) => {
     const hasInputValues = email.length > 0 && password.length > 0;
     return (
       <Stack width="$fluid" flex={1} gap="$size.x6">
@@ -74,28 +81,23 @@ const LoginBox = memo<ILoginBoxProps>(
         </Stack>
         <Stack gap="$size.x4">
           {!isPlatformAndroid && (
-            <AppleAuthentication.AppleAuthenticationButton
-              buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
-              cornerRadius={8}
-              style={{ width: '100%', height: 52 }}
-              onPress={async () => {
-                try {
-                  await signInWithApple();
-                } catch (error) {
-                  const errorMessage = error instanceof Error ? error.message : 'Apple 로그인에 실패했습니다.';
-                  onError({ authType: 'login', message: errorMessage });
-                }
-              }}
-            />
+            <Stack>
+              <AppleAuthentication.AppleAuthenticationButton
+                buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+                buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
+                cornerRadius={8}
+                style={{ width: '100%', height: 52 }}
+                onPress={onPressLoginWithApple}
+              />
+              <Stack flexDirection="row" width="$fluid" justify="center" items="center" gap="$size.x2" px="$size.x1">
+                <Separator width="$fluid" borderColor="$colors.cloudGray" />
+                <Text fontSize="$3" color="$colors.cloudGray">
+                  OR
+                </Text>
+                <Separator width="$fluid" borderColor="$colors.cloudGray" />
+              </Stack>
+            </Stack>
           )}
-          <Stack flexDirection="row" width="$fluid" justify="center" items="center" gap="$size.x2" px="$size.x1">
-            <Separator width="$fluid" borderColor="$colors.cloudGray" />
-            <Text fontSize="$3" color="$colors.cloudGray">
-              OR
-            </Text>
-            <Separator width="$fluid" borderColor="$colors.cloudGray" />
-          </Stack>
           <Stack width="$fluid" gap="$size.x4">
             <BlurBox>
               <Stack width="$fluid" gap="$size.x4">
@@ -220,8 +222,8 @@ const SignUpBox = memo<ISignUpBoxProps>(
     onChangeEmail,
     onChangePassword,
     onPressSignUp,
+    onPressSignUpWithApple,
     onPressConvertAuthType,
-    onError,
   }) => {
     const hasInputValues = nickname.trim().length > 0 && email.trim().length > 0 && password.trim().length > 0;
     return (
@@ -236,28 +238,22 @@ const SignUpBox = memo<ISignUpBoxProps>(
         </Stack>
         <Stack gap="$size.x4">
           {!isPlatformAndroid && (
-            <AppleAuthentication.AppleAuthenticationButton
-              buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP}
-              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
-              cornerRadius={8}
-              style={{ width: '100%', height: 52 }}
-              onPress={async () => {
-                try {
-                  await signInWithApple();
-                } catch (error) {
-                  const errorMessage = error instanceof Error ? error.message : 'Apple 회원가입에 실패했습니다.';
-                  onError({ authType: 'signUp', message: errorMessage });
-                }
-              }}
-            />
+            <Stack>
+              <AppleAuthentication.AppleAuthenticationButton
+                buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP}
+                buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
+                cornerRadius={8}
+                style={{ width: '100%', height: 52 }}
+                onPress={onPressSignUpWithApple}></AppleAuthentication.AppleAuthenticationButton>
+              <Stack flexDirection="row" width="$fluid" justify="center" items="center" gap="$size.x2" px="$size.x1">
+                <Separator width="$fluid" borderColor="$colors.cloudGray" />
+                <Text fontSize="$3" color="$colors.cloudGray">
+                  OR
+                </Text>
+                <Separator width="$fluid" borderColor="$colors.cloudGray" />
+              </Stack>
+            </Stack>
           )}
-          <Stack flexDirection="row" width="$fluid" justify="center" items="center" gap="$size.x2" px="$size.x1">
-            <Separator width="$fluid" borderColor="$colors.cloudGray" />
-            <Text fontSize="$3" color="$colors.cloudGray">
-              OR
-            </Text>
-            <Separator width="$fluid" borderColor="$colors.cloudGray" />
-          </Stack>
           <BlurBox>
             <Stack width="$fluid" gap="$size.x4">
               <Text fontSize="$7" fontWeight="$600" color="$colors.moonSoftWhite">
@@ -405,7 +401,7 @@ const SignUpBox = memo<ISignUpBoxProps>(
 
 export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
   const route = useRouter();
-  const { appUser, signUpWithEmail, signInWithEmail } = useAuth();
+  const { appUser, signUpWithEmail, signInWithEmail, signInWithApple } = useAuth();
   const [currentAuthType, setCurrentAuthType] = useState<IAuthType>(authType);
   const [loginFormData, setLoginFormData] = useState<ILoginFormType>({
     email: '',
@@ -416,7 +412,7 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
     password: '',
     nickname: '',
   });
-  const [authError, setAuthError] = useState<IAuthErrorType | null>({ authType: 'login', message: '로그인 오류' });
+  const [authError, setAuthError] = useState<IAuthErrorType | null>(null);
 
   const { isCurrentAuthTypeLogin, isCurrentAuthTypeSignUp } = useMemo(() => {
     const isCurrentAuthTypeLogin = currentAuthType === 'login';
@@ -444,6 +440,22 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
     setAuthError(null);
     setCurrentAuthType('signUp');
   }, []);
+
+  const clearFormData = useCallback(() => {
+    const isCurrentAuthTypeLogin = currentAuthType === 'login';
+    if (isCurrentAuthTypeLogin) {
+      setLoginFormData({
+        email: '',
+        password: '',
+      });
+      return;
+    }
+    setSignUpFormData({
+      email: '',
+      password: '',
+      nickname: '',
+    });
+  }, [currentAuthType]);
 
   const handleChangeSignUpNickname = useCallback((nickname: string) => {
     setSignUpFormData((prev) => {
@@ -491,45 +503,61 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
   }, []);
 
   const handlePressLoginWithEmail = useCallback(async () => {
-    const response = await signInWithEmail({
-      email: loginFormData.email,
-      password: loginFormData.password,
-    });
-    if (!response.ok) {
-      setAuthError({ authType: 'login', message: response.message });
-      return;
+    try {
+      const response = await signInWithEmail({
+        email: loginFormData.email,
+        password: loginFormData.password,
+      });
+      if (!response.ok) {
+        setAuthError({ authType: 'login', message: response.message });
+        return;
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '로그인에 실패했습니다. 다시 시도해주세요.';
+      setAuthError({ authType: 'login', message: errorMessage });
     }
   }, [loginFormData.email, loginFormData.password, signInWithEmail]);
 
   const handlePressSignUpWithEmail = useCallback(async () => {
-    const response = await signUpWithEmail({
-      email: signUpFormData.email,
-      password: signUpFormData.password,
-      name: signUpFormData.nickname,
-    });
-    if (!response.ok) {
-      setAuthError({ authType: 'signUp', message: response.message });
-      return;
+    try {
+      const response = await signUpWithEmail({
+        email: signUpFormData.email,
+        password: signUpFormData.password,
+        name: signUpFormData.nickname,
+      });
+      if (!response.ok) {
+        setAuthError({ authType: 'signUp', message: response.message });
+        return;
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '회원가입에 실패했습니다. 다시 시도해주세요.';
+      setAuthError({ authType: 'signUp', message: errorMessage });
     }
   }, [signUpWithEmail, signUpFormData.email, signUpFormData.password, signUpFormData.nickname]);
 
-  const handleCloseAuthError = useCallback(() => {
-    setAuthError(null);
-  }, []);
+  const handlePressLoginWithApple = useCallback(async () => {
+    try {
+      const response = await signInWithApple();
+      if (!response.ok) {
+        setAuthError({ authType: 'login', message: response.message });
+        return;
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '애플 로그인에 실패했습니다. 다시 시도해주세요.';
+      setAuthError({ authType: 'login', message: errorMessage });
+    }
+  }, [signInWithApple]);
 
-  const handleAuthError = useCallback(({ authType, message }: IAuthErrorType) => {
-    setAuthError({ authType, message });
-  }, []);
+  const handleCloseAuthError = useCallback(() => {
+    clearFormData();
+    setAuthError(null);
+  }, [clearFormData]);
 
   useDidUpdate(() => {
     if (appUser) {
       route.push('/(tabs)/home');
     }
   }, [appUser]);
-
-  useDidUpdate(() => {
-    console.log('AuthScreen authError', authError);
-  }, [authError]);
 
   return (
     <LinearGradientLayout screenEdge={['top']} hasHeader>
@@ -626,7 +654,7 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
                 onChangePassword={handleChangeLoginPassword}
                 onPressLogin={handlePressLoginWithEmail}
                 onPressConvertAuthType={handlePressConvertAuthType}
-                onError={handleAuthError}
+                onPressLoginWithApple={handlePressLoginWithApple}
               />
             ) : (
               <SignUpBox
@@ -637,8 +665,8 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
                 onChangePassword={handleChangeSignUpPassword}
                 onChangeNickname={handleChangeSignUpNickname}
                 onPressSignUp={handlePressSignUpWithEmail}
+                onPressSignUpWithApple={handlePressLoginWithApple}
                 onPressConvertAuthType={handlePressConvertAuthType}
-                onError={handleAuthError}
               />
             )}
           </Stack>
