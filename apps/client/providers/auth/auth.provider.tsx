@@ -317,6 +317,7 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
   }, [clearAuthState, syncAppUser]);
 
   useDidMount(async () => {
+    isMountedRef.current = true;
     await bootstrapAuth();
     const {
       data: { subscription },
