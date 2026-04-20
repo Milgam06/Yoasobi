@@ -22,9 +22,9 @@ export const SplashScreen = memo(() => {
     }
     const routeTimeout = setTimeout(() => {
       if (session) {
-        route.push('/(tabs)/home');
+        route.replace('/(tabs)/home');
       } else {
-        route.push('/greeting/greeting');
+        route.replace('/greeting/greeting');
       }
     }, 3000);
 

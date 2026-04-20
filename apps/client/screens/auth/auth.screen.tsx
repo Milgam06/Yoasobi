@@ -244,7 +244,8 @@ const SignUpBox = memo<ISignUpBoxProps>(
                 buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
                 cornerRadius={8}
                 style={{ width: '100%', height: 52 }}
-                onPress={onPressSignUpWithApple}/>
+                onPress={onPressSignUpWithApple}
+              />
               <Stack flexDirection="row" width="$fluid" justify="center" items="center" gap="$size.x2" px="$size.x1">
                 <Separator width="$fluid" borderColor="$colors.cloudGray" />
                 <Text fontSize="$3" color="$colors.cloudGray">
@@ -509,14 +510,14 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
         password: loginFormData.password,
       });
       if (!response.ok) {
-        setAuthError({ authType: 'login', message: response.message });
+        setAuthError({ authType: currentAuthType, message: response.message });
         return;
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '로그인에 실패했습니다. 다시 시도해주세요.';
-      setAuthError({ authType: 'login', message: errorMessage });
+      setAuthError({ authType: currentAuthType, message: errorMessage });
     }
-  }, [loginFormData.email, loginFormData.password, signInWithEmail]);
+  }, [currentAuthType, loginFormData.email, loginFormData.password, signInWithEmail]);
 
   const handlePressSignUpWithEmail = useCallback(async () => {
     try {
@@ -526,27 +527,31 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
         name: signUpFormData.nickname,
       });
       if (!response.ok) {
-        setAuthError({ authType: 'signUp', message: response.message });
+        setAuthError({ authType: currentAuthType, message: response.message });
         return;
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '회원가입에 실패했습니다. 다시 시도해주세요.';
-      setAuthError({ authType: 'signUp', message: errorMessage });
+      setAuthError({ authType: currentAuthType, message: errorMessage });
     }
-  }, [signUpWithEmail, signUpFormData.email, signUpFormData.password, signUpFormData.nickname]);
+  }, [signUpWithEmail, signUpFormData.email, signUpFormData.password, signUpFormData.nickname, currentAuthType]);
 
   const handlePressLoginWithApple = useCallback(async () => {
     try {
       const response = await signInWithApple();
       if (!response.ok) {
-        setAuthError({ authType: 'login', message: response.message });
+        setAuthError({ authType: currentAuthType, message: response.message });
         return;
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '애플 로그인에 실패했습니다. 다시 시도해주세요.';
-      setAuthError({ authType: 'login', message: errorMessage });
+      const errorMessageByAuthType = {
+        login: '애플 로그인에 실패했습니다. 다시 시도해주세요.',
+        signUp: '애플 회원가입에 실패했습니다. 다시 시도해주세요.',
+      };
+      const message = error instanceof Error ? error.message : errorMessageByAuthType[currentAuthType];
+      setAuthError({ authType: currentAuthType, message });
     }
-  }, [signInWithApple]);
+  }, [currentAuthType, signInWithApple]);
 
   const handleCloseAuthError = useCallback(() => {
     clearFormData();

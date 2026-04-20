@@ -152,6 +152,7 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
           ok: true,
         };
       } catch (error) {
+        await supabaseAuth.signOut();
         return {
           ok: false,
           message: '회원가입에 실패했습니다. 다시 시도해주세요.',
@@ -259,7 +260,7 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
         credential.fullName?.middleName,
       ]
         .filter(Boolean)
-        .join('');
+        .join(' ');
 
       const name = appleFullName || data.user.user_metadata['nickname'] || 'Apple User';
 
@@ -318,11 +319,13 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
 
   useDidMount(async () => {
     isMountedRef.current = true;
-    await bootstrapAuth();
     const {
       data: { subscription },
     } = supabaseAuth.onAuthStateChange(async (event, session) => {
       if (!isMountedRef.current) {
+        return;
+      }
+      if (event === 'INITIAL_SESSION') {
         return;
       }
       if (event === 'SIGNED_OUT') {
@@ -346,6 +349,7 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
       }
     });
     subscriptionRef.current = subscription;
+    await bootstrapAuth();
   });
 
   useWillUnmount(() => {
