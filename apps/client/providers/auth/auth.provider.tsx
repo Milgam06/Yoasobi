@@ -1,4 +1,5 @@
-import { supabaseAuth, useCreateUserMutation, useGetExistingUserLazyQuery, UserEntity } from '@/libs';
+import { useCreateUserMutation, useGetExistingUserLazyQuery, UserEntity } from '@/libs';
+import { supabaseAuth } from '@/libs/supabase.lib';
 import { Session, User } from '@supabase/supabase-js';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { createContext, memo, ReactNode, useCallback, useContext, useRef, useState } from 'react';
