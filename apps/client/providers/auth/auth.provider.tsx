@@ -314,6 +314,8 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
       }
       clearAuthState();
       setIsReady(true);
+    } finally {
+      setIsLoading(false);
     }
   }, [clearAuthState, syncAppUser]);
 
