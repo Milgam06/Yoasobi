@@ -13,10 +13,9 @@ const isPlatformWeb = Platform.OS === 'web';
 
 const supabase = createClient(supabaseUrl, supabasePublicKey, {
   auth: {
-    ...(isPlatformWeb ? {} : { storage: AsyncStorage }),
+    ...(isPlatformWeb ? { detectSessionInUrl: true } : { storage: AsyncStorage, detectSessionInUrl: false }),
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: false,
     lock: processLock,
   },
 });
