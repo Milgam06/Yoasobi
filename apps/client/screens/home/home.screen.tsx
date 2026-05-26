@@ -548,10 +548,13 @@ export const HomeScreen = memo(() => {
   }, []);
 
   const fetchWeeklyYoasobi = useCallback(async () => {
+    if (!userId) {
+      return;
+    }
     const { data } = await getWeeklyYoasobiQuery({
       variables: {
         input: {
-          userId: 'currentUserId',
+          userId,
           weekStartDate,
         },
       },
@@ -561,7 +564,7 @@ export const HomeScreen = memo(() => {
       return;
     }
     setExistedYoasobi(yoasobi);
-  }, [getWeeklyYoasobiQuery, weekStartDate]);
+  }, [getWeeklyYoasobiQuery, userId, weekStartDate]);
 
   const createNewYoasobi = useCallback(async () => {
     if (!userId) {
