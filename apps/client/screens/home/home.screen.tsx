@@ -16,11 +16,11 @@ import { faStopwatch } from '@fortawesome/free-solid-svg-icons/faStopwatch';
 import { faBurst } from '@fortawesome/free-solid-svg-icons/faBurst';
 import { faMoon } from '@fortawesome/free-solid-svg-icons/faMoon';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { useDidMount } from 'rooks';
 import { Button, ColorTokens, Progress, ScrollView, Separator, Sheet, Stack, Switch, Text } from 'tamagui';
 import { Platform } from 'react-native';
+import { useAuth } from '@/providers';
 
 type IYoasobi = {
   id: string;
@@ -447,6 +447,7 @@ const YoasobiResultBox = memo<IYoasobiResultBoxProps>(({ yoasobiDay, yoasobiDate
 });
 
 export const HomeScreen = memo(() => {
+  const { userId, isReady } = useAuth();
   const today = new Date();
   const [isMidnightNotificationEnabled, setIsMidnightNotificationEnabled] = useState<boolean>(false);
   const [existedYoasobi, setExistedYoasobi] = useState<IYoasobi | null>(null);
@@ -484,10 +485,12 @@ export const HomeScreen = memo(() => {
   }, []);
 
   const handleShowStartTimeSheet = useCallback(() => {
+    setIsDurationSheetOpen(false);
     setIsStartTimeSheetOpen(true);
   }, []);
 
   const handleShowDurationSheet = useCallback(() => {
+    setIsStartTimeSheetOpen(false);
     setIsDurationSheetOpen(true);
   }, []);
 
@@ -500,6 +503,10 @@ export const HomeScreen = memo(() => {
   }, []);
 
   const handleChangeStartTime = useCallback((event: DateTimePickerEvent, startTime?: Date) => {
+    if (Platform.OS === 'android') {
+      setIsStartTimeSheetOpen(false);
+    }
+
     const isStartTimeUpdated = event.type === 'set' && startTime;
     if (!isStartTimeUpdated) {
       return;
@@ -540,10 +547,13 @@ export const HomeScreen = memo(() => {
   }, []);
 
   const fetchWeeklyYoasobi = useCallback(async () => {
+    if (!userId) {
+      return;
+    }
     const { data } = await getWeeklyYoasobiQuery({
       variables: {
         input: {
-          userId: 'currentUserId',
+          userId,
           weekStartDate,
         },
       },
@@ -553,13 +563,16 @@ export const HomeScreen = memo(() => {
       return;
     }
     setExistedYoasobi(yoasobi);
-  }, [getWeeklyYoasobiQuery, weekStartDate]);
+  }, [getWeeklyYoasobiQuery, userId, weekStartDate]);
 
   const createNewYoasobi = useCallback(async () => {
+    if (!userId) {
+      return;
+    }
     const { data } = await createYoasobiMutation({
       variables: {
         input: {
-          userId: 'currentUserId',
+          userId,
           dayOfWeek: selectedDayOfWeek,
           yoasobiDate: newYoasobiDate,
           alarmTime: newYoasobiDate,
@@ -568,15 +581,17 @@ export const HomeScreen = memo(() => {
       },
     });
     return data;
-  }, [createYoasobiMutation, duration, newYoasobiDate, selectedDayOfWeek]);
+  }, [createYoasobiMutation, duration, newYoasobiDate, selectedDayOfWeek, userId]);
 
   const handlePressCreateYoasobi = useCallback(async () => {
     await createNewYoasobi();
   }, [createNewYoasobi]);
 
-  useDidMount(async () => {
-    await fetchWeeklyYoasobi();
-  });
+  useEffect(() => {
+    if (isReady && userId) {
+      fetchWeeklyYoasobi();
+    }
+  }, [userId, isReady, fetchWeeklyYoasobi]);
 
   return (
     <DefaultLayout isBlur hasHeader>

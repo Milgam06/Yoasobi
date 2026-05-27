@@ -6,6 +6,7 @@ import { join } from 'path';
 import { PrismaModule } from './prisma';
 import { YoasobiModule } from './yoasobi';
 import { UtilModule } from './utils';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UtilModule } from './utils';
     }),
     PrismaModule,
     UtilModule,
+    UserModule,
     YoasobiModule,
   ],
 })

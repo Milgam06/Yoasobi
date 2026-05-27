@@ -5,7 +5,7 @@ const schemaPath = resolve(__dirname, '../../packages/shared/graphql/schema.gql'
 
 const config: CodegenConfig = {
   schema: schemaPath,
-  documents: ['screens/**/*.graphql'],
+  documents: ['screens/**/*.graphql', 'providers/**/*.graphql'],
   generates: {
     'libs/graphql/generated.tsx': {
       plugins: ['typescript', 'typescript-operations', 'typescript-react-apollo'],

@@ -1,12 +1,14 @@
 import { BlurView } from 'expo-blur';
 import { memo, ReactNode } from 'react';
-import { Stack } from 'tamagui';
+import { GetThemeValueForKey, Stack } from 'tamagui';
 
 type IBlurBoxProps = {
+  px?: GetThemeValueForKey<'paddingHorizontal'> | number;
+  py?: GetThemeValueForKey<'paddingVertical'> | number;
   children: ReactNode;
 };
 
-export const BlurBox = memo<IBlurBoxProps>(({ children }) => {
+export const BlurBox = memo<IBlurBoxProps>(({ px = '$size.x6', py = '$size.x4', children }) => {
   return (
     <BlurView
       style={{
@@ -20,7 +22,7 @@ export const BlurBox = memo<IBlurBoxProps>(({ children }) => {
       }}
       intensity={80}
       tint="dark">
-      <Stack width="$fluid" px="$size.x6" py="$size.x4">
+      <Stack width="$fluid" px={px} py={py}>
         {children}
       </Stack>
     </BlurView>

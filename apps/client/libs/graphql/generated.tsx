@@ -19,6 +19,17 @@ export type Scalars = {
   DateTime: { input: any; output: any; }
 };
 
+export type CreateUserInputDto = {
+  name: Scalars['String']['input'];
+  timezone: Scalars['String']['input'];
+  userId: Scalars['String']['input'];
+};
+
+export type CreateUserOutputDto = {
+  __typename?: 'CreateUserOutputDto';
+  user: UserEntity;
+};
+
 export type CreateYoasobiInputDto = {
   alarmTime: Scalars['DateTime']['input'];
   dayOfWeek: DayOfWeek;
@@ -42,6 +53,29 @@ export enum DayOfWeek {
   Wednesday = 'WEDNESDAY'
 }
 
+export type DeleteUserInputDto = {
+  userId: Scalars['String']['input'];
+};
+
+export type DeleteUserOutputDto = {
+  __typename?: 'DeleteUserOutputDto';
+  success: Scalars['Boolean']['output'];
+};
+
+export type GetUserInputDto = {
+  userId: Scalars['String']['input'];
+};
+
+export type GetUserOutputDto = {
+  __typename?: 'GetUserOutputDto';
+  user?: Maybe<UserEntity>;
+};
+
+export type GetUsersOutputDto = {
+  __typename?: 'GetUsersOutputDto';
+  users: Array<UserEntity>;
+};
+
 export type GetYoasobiInputDto = {
   userId: Scalars['String']['input'];
   weekStartDate: Scalars['DateTime']['input'];
@@ -54,7 +88,14 @@ export type GetYoasobiOutputDto = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  createUser: CreateUserOutputDto;
   createYoasobi: CreateYoasobiOutputDto;
+  deleteUser: DeleteUserOutputDto;
+};
+
+
+export type MutationCreateUserArgs = {
+  input: CreateUserInputDto;
 };
 
 
@@ -62,14 +103,35 @@ export type MutationCreateYoasobiArgs = {
   input: CreateYoasobiInputDto;
 };
 
+
+export type MutationDeleteUserArgs = {
+  input: DeleteUserInputDto;
+};
+
 export type Query = {
   __typename?: 'Query';
+  getUser: GetUserOutputDto;
+  getUsers: GetUsersOutputDto;
   getYoasobi: GetYoasobiOutputDto;
+};
+
+
+export type QueryGetUserArgs = {
+  input: GetUserInputDto;
 };
 
 
 export type QueryGetYoasobiArgs = {
   input: GetYoasobiInputDto;
+};
+
+export type UserEntity = {
+  __typename?: 'UserEntity';
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  timezone: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
 };
 
 export type YoasobiEntity = {
@@ -83,6 +145,20 @@ export type YoasobiEntity = {
   weekStartDate: Scalars['DateTime']['output'];
   yoasobiDate: Scalars['DateTime']['output'];
 };
+
+export type CreateUserMutationVariables = Exact<{
+  input: CreateUserInputDto;
+}>;
+
+
+export type CreateUserMutation = { __typename?: 'Mutation', createUser: { __typename?: 'CreateUserOutputDto', user: { __typename?: 'UserEntity', id: string, name: string, timezone: string, createdAt: any, updatedAt: any } } };
+
+export type GetExistingUserQueryVariables = Exact<{
+  input: GetUserInputDto;
+}>;
+
+
+export type GetExistingUserQuery = { __typename?: 'Query', getUser: { __typename?: 'GetUserOutputDto', user?: { __typename?: 'UserEntity', id: string, name: string, timezone: string, createdAt: any, updatedAt: any } | null } };
 
 export type GetWeeklyYoasobiQueryVariables = Exact<{
   input: GetYoasobiInputDto;
@@ -99,6 +175,94 @@ export type CreateYoasobiMutationVariables = Exact<{
 export type CreateYoasobiMutation = { __typename?: 'Mutation', createYoasobi: { __typename?: 'CreateYoasobiOutputDto', yoasobi: { __typename?: 'YoasobiEntity', id: string } } };
 
 
+export const CreateUserDocument = gql`
+    mutation CreateUser($input: CreateUserInputDto!) {
+  createUser(input: $input) {
+    user {
+      id
+      name
+      timezone
+      createdAt
+      updatedAt
+    }
+  }
+}
+    `;
+export type CreateUserMutationFn = Apollo.MutationFunction<CreateUserMutation, CreateUserMutationVariables>;
+
+/**
+ * __useCreateUserMutation__
+ *
+ * To run a mutation, you first call `useCreateUserMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateUserMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createUserMutation, { data, loading, error }] = useCreateUserMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreateUserMutation(baseOptions?: Apollo.MutationHookOptions<CreateUserMutation, CreateUserMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateUserMutation, CreateUserMutationVariables>(CreateUserDocument, options);
+      }
+export type CreateUserMutationHookResult = ReturnType<typeof useCreateUserMutation>;
+export type CreateUserMutationResult = Apollo.MutationResult<CreateUserMutation>;
+export type CreateUserMutationOptions = Apollo.BaseMutationOptions<CreateUserMutation, CreateUserMutationVariables>;
+export const GetExistingUserDocument = gql`
+    query getExistingUser($input: GetUserInputDto!) {
+  getUser(input: $input) {
+    user {
+      id
+      name
+      timezone
+      createdAt
+      updatedAt
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetExistingUserQuery__
+ *
+ * To run a query within a React component, call `useGetExistingUserQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetExistingUserQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetExistingUserQuery({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useGetExistingUserQuery(baseOptions: Apollo.QueryHookOptions<GetExistingUserQuery, GetExistingUserQueryVariables> & ({ variables: GetExistingUserQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetExistingUserQuery, GetExistingUserQueryVariables>(GetExistingUserDocument, options);
+      }
+export function useGetExistingUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetExistingUserQuery, GetExistingUserQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetExistingUserQuery, GetExistingUserQueryVariables>(GetExistingUserDocument, options);
+        }
+// @ts-ignore
+export function useGetExistingUserSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<GetExistingUserQuery, GetExistingUserQueryVariables>): Apollo.UseSuspenseQueryResult<GetExistingUserQuery, GetExistingUserQueryVariables>;
+export function useGetExistingUserSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetExistingUserQuery, GetExistingUserQueryVariables>): Apollo.UseSuspenseQueryResult<GetExistingUserQuery | undefined, GetExistingUserQueryVariables>;
+export function useGetExistingUserSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetExistingUserQuery, GetExistingUserQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetExistingUserQuery, GetExistingUserQueryVariables>(GetExistingUserDocument, options);
+        }
+export type GetExistingUserQueryHookResult = ReturnType<typeof useGetExistingUserQuery>;
+export type GetExistingUserLazyQueryHookResult = ReturnType<typeof useGetExistingUserLazyQuery>;
+export type GetExistingUserSuspenseQueryHookResult = ReturnType<typeof useGetExistingUserSuspenseQuery>;
+export type GetExistingUserQueryResult = Apollo.QueryResult<GetExistingUserQuery, GetExistingUserQueryVariables>;
 export const GetWeeklyYoasobiDocument = gql`
     query getWeeklyYoasobi($input: GetYoasobiInputDto!) {
   getYoasobi(input: $input) {

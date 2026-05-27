@@ -9,6 +9,7 @@ const tokens = createTokens({
     streetBlack: '#100F1E',
     cloudGray: '#858090',
     lampYellow: '#FED896',
+    emberRed: '#E67E7E',
   },
   size: {
     true: 4,
@@ -19,6 +20,7 @@ const tokens = createTokens({
     x2: 8,
     x2_5: 10,
     x3: 12,
+    x3_5: 14,
     x4: 16,
     x5: 20,
     x6: 24,

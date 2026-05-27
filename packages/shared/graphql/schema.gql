@@ -36,8 +36,38 @@ type GetYoasobiOutputDto {
   yoasobi: YoasobiEntity
 }
 
+type CreateUserOutputDto {
+  user: UserEntity!
+}
+
+type UserEntity {
+  id: String!
+  name: String!
+  timezone: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type DeleteUserOutputDto {
+  success: Boolean!
+}
+
+type GetUserOutputDto {
+  user: UserEntity
+}
+
+type GetUsersOutputDto {
+  users: [UserEntity!]!
+}
+
 type Query {
+  getUser(input: GetUserInputDto!): GetUserOutputDto!
+  getUsers: GetUsersOutputDto!
   getYoasobi(input: GetYoasobiInputDto!): GetYoasobiOutputDto!
+}
+
+input GetUserInputDto {
+  userId: String!
 }
 
 input GetYoasobiInputDto {
@@ -46,7 +76,19 @@ input GetYoasobiInputDto {
 }
 
 type Mutation {
+  createUser(input: CreateUserInputDto!): CreateUserOutputDto!
+  deleteUser(input: DeleteUserInputDto!): DeleteUserOutputDto!
   createYoasobi(input: CreateYoasobiInputDto!): CreateYoasobiOutputDto!
+}
+
+input CreateUserInputDto {
+  userId: String!
+  name: String!
+  timezone: String!
+}
+
+input DeleteUserInputDto {
+  userId: String!
 }
 
 input CreateYoasobiInputDto {

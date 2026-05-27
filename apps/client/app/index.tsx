@@ -1,3 +1,5 @@
 import { SplashScreen } from '@/screens';
 
-export default SplashScreen;
+export default function Splash() {
+  return <SplashScreen />;
+}

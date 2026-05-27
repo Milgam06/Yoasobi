@@ -1,3 +1,5 @@
 import { HistoryScreen } from '@/screens';
 
-export default HistoryScreen;
+export default function History() {
+  return <HistoryScreen />;
+}

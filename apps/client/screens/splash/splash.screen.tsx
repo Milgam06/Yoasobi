@@ -1,4 +1,5 @@
 import { DefaultLayout } from '@/components';
+import { useAuth } from '@/providers';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { memo, useCallback, useState } from 'react';
@@ -8,6 +9,7 @@ import { LinearGradient } from 'tamagui/linear-gradient';
 
 export const SplashScreen = memo(() => {
   const route = useRouter();
+  const { session, isReady } = useAuth();
   const [isBackgroundLoaded, setIsBackgroundLoaded] = useState<boolean>(false);
 
   const handleLoadBackground = useCallback(() => {
@@ -15,17 +17,21 @@ export const SplashScreen = memo(() => {
   }, []);
 
   useDidUpdate(() => {
-    if (!isBackgroundLoaded) {
+    if (!isBackgroundLoaded || !isReady) {
       return;
     }
     const routeTimeout = setTimeout(() => {
-      route.replace('/(tabs)/home');
+      if (session) {
+        route.replace('/(tabs)/home');
+      } else {
+        route.replace('/greeting/greeting');
+      }
     }, 3000);
 
     return () => {
       clearTimeout(routeTimeout);
     };
-  }, [isBackgroundLoaded]);
+  }, [isBackgroundLoaded, isReady, session]);
 
   return (
     <DefaultLayout isBlur onBackgroundLoad={handleLoadBackground}>
