@@ -16,9 +16,8 @@ import { faStopwatch } from '@fortawesome/free-solid-svg-icons/faStopwatch';
 import { faBurst } from '@fortawesome/free-solid-svg-icons/faBurst';
 import { faMoon } from '@fortawesome/free-solid-svg-icons/faMoon';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { useDidMount } from 'rooks';
 import { Button, ColorTokens, Progress, ScrollView, Separator, Sheet, Stack, Switch, Text } from 'tamagui';
 import { Platform } from 'react-native';
 import { useAuth } from '@/providers';
@@ -448,7 +447,7 @@ const YoasobiResultBox = memo<IYoasobiResultBoxProps>(({ yoasobiDay, yoasobiDate
 });
 
 export const HomeScreen = memo(() => {
-  const { userId } = useAuth();
+  const { userId, isReady } = useAuth();
   const today = new Date();
   const [isMidnightNotificationEnabled, setIsMidnightNotificationEnabled] = useState<boolean>(false);
   const [existedYoasobi, setExistedYoasobi] = useState<IYoasobi | null>(null);
@@ -588,9 +587,11 @@ export const HomeScreen = memo(() => {
     await createNewYoasobi();
   }, [createNewYoasobi]);
 
-  useDidMount(async () => {
-    await fetchWeeklyYoasobi();
-  });
+  useEffect(() => {
+    if (isReady && userId) {
+      fetchWeeklyYoasobi();
+    }
+  }, [userId, isReady, fetchWeeklyYoasobi]);
 
   return (
     <DefaultLayout isBlur hasHeader>
