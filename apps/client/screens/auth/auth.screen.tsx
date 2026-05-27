@@ -56,7 +56,7 @@ type ISignUpBoxProps = {
   onPressConvertAuthType: () => void;
 };
 
-const isPlatformAndroid = Platform.OS === 'android';
+const isPlatformIOS = Platform.OS === 'ios';
 
 const LoginBox = memo<ILoginBoxProps>(
   ({
@@ -80,7 +80,7 @@ const LoginBox = memo<ILoginBoxProps>(
           </Text>
         </Stack>
         <Stack gap="$size.x4">
-          {!isPlatformAndroid && (
+          {!isPlatformIOS && (
             <Stack>
               <AppleAuthentication.AppleAuthenticationButton
                 buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
@@ -237,7 +237,7 @@ const SignUpBox = memo<ISignUpBoxProps>(
           </Text>
         </Stack>
         <Stack gap="$size.x4">
-          {!isPlatformAndroid && (
+          {!isPlatformIOS && (
             <Stack>
               <AppleAuthentication.AppleAuthenticationButton
                 buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP}
@@ -564,6 +564,7 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
     }
   }, [appUser]);
 
+  const isPlatformAndroid = Platform.OS === 'android';
   return (
     <LinearGradientLayout screenEdge={['top']} hasHeader>
       {!!authError && (
