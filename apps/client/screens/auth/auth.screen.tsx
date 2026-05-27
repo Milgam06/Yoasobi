@@ -560,7 +560,7 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
 
   useDidUpdate(() => {
     if (appUser) {
-      route.push('/(tabs)/home');
+      route.replace('/(tabs)/home');
     }
   }, [appUser]);
 
