@@ -210,7 +210,9 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
           message: '구글 로그인에 실패했습니다. 다시 시도해주세요.',
         };
       }
-      const user = await createNewUser({ userId: userData.user.id, name: userData.user.user_metadata['name'] });
+
+      const userName = userData.user.user_metadata['name'] || userData.user.email?.split('@')[0] || 'Google User';
+      const user = await createNewUser({ userId: userData.user.id, name: userName });
       setAppUser(user);
       return {
         ok: true,
