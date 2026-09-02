@@ -568,25 +568,35 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
   return (
     <LinearGradientLayout screenEdge={['top']} hasHeader>
       {!!authError && (
-        <Alert isOpen={!!authError} alertPadding="$size.x4" isErrorAlert onClose={handleCloseAuthError}>
-          <Stack width="$fluid" gap="$size.x4">
-            <Stack width="$fluid" gap="$size.x3">
-              <Stack flexDirection="row" items="center" gap="$size.x2_5">
-                <Stack py="$size.x1_5" px="$size.x1" bg="#ff909057" style={{ borderRadius: 12 }}>
-                  <FontAwesomeIcon icon={faExclamation} size={24} color="#ff7474" />
-                </Stack>
-                <Text fontSize="$9" fontWeight="$900">
-                  {authError.authType === 'login' ? '로그인' : '회원가입'}에 실패했어요
-                </Text>
+        <Alert
+          isOpen={!!authError}
+          alertPadding="$size.x4"
+          contentBorderRadius={12}
+          isErrorAlert
+          onClose={handleCloseAuthError}>
+          <Stack width="$fluid" gap="$size.x4" items="center">
+            <Stack width="$fluid" gap="$size.x2_5" items="center">
+              <Stack
+                width="$size.x13"
+                height="$size.x13"
+                justify="center"
+                items="center"
+                bg="#ff484883"
+                style={{ borderRadius: 50 }}>
+                <FontAwesomeIcon icon={faExclamation} size={26} color="#E67E7E" />
               </Stack>
-              <Text fontSize="$5" color="$colors.cloudGray">
+              <Text fontSize="$8" fontWeight="$900" color="$colors.moonSoftWhite" style={{ textAlign: 'center' }}>
+                {authError.authType === 'login' ? '로그인' : '회원가입'}에 실패했어요
+              </Text>
+              <Text fontSize="$5" fontWeight="$600" color="$colors.cloudGray" style={{ textAlign: 'center' }}>
                 {authError.message}
               </Text>
             </Stack>
+            <Separator width="$fluid" borderColor="#ffffff1f" />
             <Button
               width="$fluid"
               height="$fit"
-              py="$size.x2_5"
+              py="$size.x3"
               bg="$colors.lampYellow"
               borderTopLeftRadius="$size.x3"
               borderTopRightRadius="$size.x3"
