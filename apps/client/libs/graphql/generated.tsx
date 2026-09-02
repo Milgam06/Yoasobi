@@ -16,7 +16,7 @@ export type Scalars = {
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
   /** A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format. */
-  DateTime: { input: any; output: any; }
+  DateTime: { input: string; output: string; }
 };
 
 export type CreateUserInputDto = {
@@ -151,21 +151,21 @@ export type CreateUserMutationVariables = Exact<{
 }>;
 
 
-export type CreateUserMutation = { __typename?: 'Mutation', createUser: { __typename?: 'CreateUserOutputDto', user: { __typename?: 'UserEntity', id: string, name: string, timezone: string, createdAt: any, updatedAt: any } } };
+export type CreateUserMutation = { __typename?: 'Mutation', createUser: { __typename?: 'CreateUserOutputDto', user: { __typename?: 'UserEntity', id: string, name: string, timezone: string, createdAt: string, updatedAt: string } } };
 
 export type GetExistingUserQueryVariables = Exact<{
   input: GetUserInputDto;
 }>;
 
 
-export type GetExistingUserQuery = { __typename?: 'Query', getUser: { __typename?: 'GetUserOutputDto', user?: { __typename?: 'UserEntity', id: string, name: string, timezone: string, createdAt: any, updatedAt: any } | null } };
+export type GetExistingUserQuery = { __typename?: 'Query', getUser: { __typename?: 'GetUserOutputDto', user?: { __typename?: 'UserEntity', id: string, name: string, timezone: string, createdAt: string, updatedAt: string } | null } };
 
 export type GetWeeklyYoasobiQueryVariables = Exact<{
   input: GetYoasobiInputDto;
 }>;
 
 
-export type GetWeeklyYoasobiQuery = { __typename?: 'Query', getYoasobi: { __typename?: 'GetYoasobiOutputDto', yoasobi?: { __typename?: 'YoasobiEntity', id: string, yoasobiDate: any, dayOfWeek: DayOfWeek, alarmTime: any, duration: number, createdAt: any } | null } };
+export type GetWeeklyYoasobiQuery = { __typename?: 'Query', getYoasobi: { __typename?: 'GetYoasobiOutputDto', yoasobi?: { __typename?: 'YoasobiEntity', id: string, yoasobiDate: string, dayOfWeek: DayOfWeek, alarmTime: string, duration: number, createdAt: string } | null } };
 
 export type CreateYoasobiMutationVariables = Exact<{
   input: CreateYoasobiInputDto;
