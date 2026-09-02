@@ -382,7 +382,7 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
 
 const YoasobiWeekCompleteBox = memo(() => (
   <BlurBox>
-    <Stack width="$fluid" justify="center" items="center" gap="$size.x3" py="$size.x8">
+    <Stack width="$fluid" justify="center" items="center" gap="$size.x6" py="$size.x4">
       <FontAwesomeIcon
         size={36}
         icon={faMoon}
@@ -394,9 +394,9 @@ const YoasobiWeekCompleteBox = memo(() => (
           shadowOffset: { width: 0, height: 0 },
         }}
       />
-      <Stack justify="center" items="center" gap="$size.x1_5">
+      <Stack justify="center" items="center" gap="$size.x2">
         <Text style={{ textAlign: 'center' }} fontSize="$8" fontWeight="$900" color="$colors.moonSoftWhite">
-          이번 주 YOASOBI를 모두 즐겼어요
+          이번 주 YOASOBI를 마쳤어요
         </Text>
         <Text style={{ textAlign: 'center' }} fontSize="$5" color="$colors.cloudGray">
           다음 주에 새로운 새벽 산책을 정해보세요.
