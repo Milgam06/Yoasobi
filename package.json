@@ -12,6 +12,7 @@
     "packages/shared"
   ],
   "scripts": {
+    "setup": "nvm use && yarn install",
     "dev:client": "yarn workspace @yoasobi/client start",
     "dev:server": "yarn workspace @yoasobi/server start:dev",
     "codegen": "yarn workspace @yoasobi/client codegen",
