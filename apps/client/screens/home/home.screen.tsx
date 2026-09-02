@@ -7,7 +7,7 @@ import {
   MS_PER_DAY,
 } from '@/constants';
 import { DayOfWeek, useCreateYoasobiMutation, useGetWeeklyYoasobiLazyQuery } from '@/libs';
-import { getDateByDayOfWeekUtil, getWeekStartDateUtil } from '@/utils';
+import { getDateByDayOfWeekUtil, getWeekStartDateUtil, parseDateTime } from '@/utils';
 import { faAlarmClock } from '@fortawesome/free-solid-svg-icons/faAlarmClock';
 import { faBell } from '@fortawesome/free-solid-svg-icons/faBell';
 import { faMinus } from '@fortawesome/free-solid-svg-icons/faMinus';
@@ -140,10 +140,11 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
                     opacity={isDaySelectable ? 1 : 0.35}
                     animation="quick"
                     style={{ borderRadius: 8 }}
-                    pressStyle={isDaySelectable ? { opacity: 0.6 } : undefined}
-                    accessibilityRole="button"
-                    accessibilityState={{ disabled: !isDaySelectable, selected: isDayActive }}
-                    onPress={isDaySelectable ? () => onPressDay(day) : undefined}>
+                    aria-disabled={!isDaySelectable}
+                    aria-checked={isDayActive}
+                    disabled={!isDaySelectable}
+                    pressStyle={{ opacity: 0.6 }}
+                    onPress={() => onPressDay(day)}>
                     <Text fontSize="$7" fontWeight="$900" color={fontColor}>
                       {DAY_OF_WEEK_TEXT[day]}
                     </Text>
@@ -617,11 +618,21 @@ export const HomeScreen = memo(() => {
       variables: {
         input: {
           userId,
-          weekStartDate,
+          weekStartDate: weekStartDate.toISOString(),
         },
       },
     });
-    setExistedYoasobi(data?.getYoasobi.yoasobi ?? null);
+    const yoasobi = data?.getYoasobi.yoasobi;
+    setExistedYoasobi(
+      yoasobi
+        ? {
+            ...yoasobi,
+            yoasobiDate: parseDateTime(yoasobi.yoasobiDate),
+            alarmTime: parseDateTime(yoasobi.alarmTime),
+            createdAt: parseDateTime(yoasobi.createdAt),
+          }
+        : null,
+    );
   }, [getWeeklyYoasobiQuery, userId, weekStartDate]);
 
   const createNewYoasobi = useCallback(async () => {
@@ -634,13 +645,26 @@ export const HomeScreen = memo(() => {
         input: {
           userId,
           dayOfWeek: selectedDayOfWeek,
-          yoasobiDate: newYoasobiDate,
-          alarmTime: newYoasobiDate,
+          yoasobiDate: newYoasobiDate.toISOString(),
+          alarmTime: newYoasobiDate.toISOString(),
           duration,
         },
       },
+      fetchPolicy: 'network-only',
     });
-    return data;
+
+    const createdYoasobi = data?.createYoasobi.yoasobi;
+
+    setExistedYoasobi(
+      createdYoasobi
+        ? {
+            ...createdYoasobi,
+            yoasobiDate: parseDateTime(createdYoasobi.yoasobiDate),
+            alarmTime: parseDateTime(createdYoasobi.alarmTime),
+            createdAt: parseDateTime(createdYoasobi.createdAt),
+          }
+        : null,
+    );
   }, [createYoasobiMutation, duration, newYoasobiDate, selectableDaysOfWeek, selectedDayOfWeek, userId]);
 
   const handlePressCreateYoasobi = useCallback(async () => {

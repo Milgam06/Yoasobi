@@ -62,6 +62,15 @@ export type DeleteUserOutputDto = {
   success: Scalars['Boolean']['output'];
 };
 
+export type DeleteYoasobiInputDto = {
+  yoasobiId: Scalars['String']['input'];
+};
+
+export type DeleteYoasobiOutputDto = {
+  __typename?: 'DeleteYoasobiOutputDto';
+  success: Scalars['Boolean']['output'];
+};
+
 export type GetUserInputDto = {
   userId: Scalars['String']['input'];
 };
@@ -91,6 +100,7 @@ export type Mutation = {
   createUser: CreateUserOutputDto;
   createYoasobi: CreateYoasobiOutputDto;
   deleteUser: DeleteUserOutputDto;
+  deleteYoasobi: DeleteYoasobiOutputDto;
 };
 
 
@@ -106,6 +116,11 @@ export type MutationCreateYoasobiArgs = {
 
 export type MutationDeleteUserArgs = {
   input: DeleteUserInputDto;
+};
+
+
+export type MutationDeleteYoasobiArgs = {
+  input: DeleteYoasobiInputDto;
 };
 
 export type Query = {
@@ -160,6 +175,8 @@ export type GetExistingUserQueryVariables = Exact<{
 
 export type GetExistingUserQuery = { __typename?: 'Query', getUser: { __typename?: 'GetUserOutputDto', user?: { __typename?: 'UserEntity', id: string, name: string, timezone: string, createdAt: string, updatedAt: string } | null } };
 
+export type YoasobiFieldsFragment = { __typename?: 'YoasobiEntity', id: string, yoasobiDate: string, dayOfWeek: DayOfWeek, alarmTime: string, duration: number, createdAt: string };
+
 export type GetWeeklyYoasobiQueryVariables = Exact<{
   input: GetYoasobiInputDto;
 }>;
@@ -172,9 +189,18 @@ export type CreateYoasobiMutationVariables = Exact<{
 }>;
 
 
-export type CreateYoasobiMutation = { __typename?: 'Mutation', createYoasobi: { __typename?: 'CreateYoasobiOutputDto', yoasobi: { __typename?: 'YoasobiEntity', id: string } } };
+export type CreateYoasobiMutation = { __typename?: 'Mutation', createYoasobi: { __typename?: 'CreateYoasobiOutputDto', yoasobi: { __typename?: 'YoasobiEntity', id: string, yoasobiDate: string, dayOfWeek: DayOfWeek, alarmTime: string, duration: number, createdAt: string } } };
 
-
+export const YoasobiFieldsFragmentDoc = gql`
+    fragment YoasobiFields on YoasobiEntity {
+  id
+  yoasobiDate
+  dayOfWeek
+  alarmTime
+  duration
+  createdAt
+}
+    `;
 export const CreateUserDocument = gql`
     mutation CreateUser($input: CreateUserInputDto!) {
   createUser(input: $input) {
@@ -267,16 +293,11 @@ export const GetWeeklyYoasobiDocument = gql`
     query getWeeklyYoasobi($input: GetYoasobiInputDto!) {
   getYoasobi(input: $input) {
     yoasobi {
-      id
-      yoasobiDate
-      dayOfWeek
-      alarmTime
-      duration
-      createdAt
+      ...YoasobiFields
     }
   }
 }
-    `;
+    ${YoasobiFieldsFragmentDoc}`;
 
 /**
  * __useGetWeeklyYoasobiQuery__
@@ -317,11 +338,11 @@ export const CreateYoasobiDocument = gql`
     mutation createYoasobi($input: CreateYoasobiInputDto!) {
   createYoasobi(input: $input) {
     yoasobi {
-      id
+      ...YoasobiFields
     }
   }
 }
-    `;
+    ${YoasobiFieldsFragmentDoc}`;
 export type CreateYoasobiMutationFn = Apollo.MutationFunction<CreateYoasobiMutation, CreateYoasobiMutationVariables>;
 
 /**
