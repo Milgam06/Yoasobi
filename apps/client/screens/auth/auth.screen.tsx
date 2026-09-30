@@ -80,7 +80,7 @@ const LoginBox = memo<ILoginBoxProps>(
           </Text>
         </Stack>
         <Stack gap="$size.x4">
-          {!isPlatformIOS && (
+          {/* {!isPlatformIOS && (
             <Stack>
               <AppleAuthentication.AppleAuthenticationButton
                 buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
@@ -97,7 +97,7 @@ const LoginBox = memo<ILoginBoxProps>(
                 <Separator width="$fluid" borderColor="$colors.cloudGray" />
               </Stack>
             </Stack>
-          )}
+          )} */}
           <Stack width="$fluid" gap="$size.x4">
             <BlurBox>
               <Stack width="$fluid" gap="$size.x4">

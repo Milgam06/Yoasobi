@@ -48,7 +48,7 @@ export const GreetingScreen = memo(() => {
             width="$fluid"
             height="auto"
             bg="$colors.moonSoftWhite"
-            py="$size.x5"
+            py="$size.x3"
             borderTopLeftRadius="$size.x5"
             borderTopRightRadius="$size.x5"
             borderBottomLeftRadius="$size.x5"
@@ -68,7 +68,7 @@ export const GreetingScreen = memo(() => {
             bg="$colors.midnightPurple"
             borderWidth={1}
             borderColor="$colors.cloudGray"
-            py="$size.x5"
+            py="$size.x3"
             borderTopLeftRadius="$size.x5"
             borderTopRightRadius="$size.x5"
             borderBottomLeftRadius="$size.x5"
