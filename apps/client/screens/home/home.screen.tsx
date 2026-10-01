@@ -19,7 +19,7 @@ import { faMoon } from '@fortawesome/free-solid-svg-icons/faMoon';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useFocusEffect } from 'expo-router';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import RNDateTimePicker, { DateTimePickerChangeEvent } from '@react-native-community/datetimepicker';
 import { Button, ColorTokens, Progress, ScrollView, Separator, Sheet, Stack, Switch, Text } from 'tamagui';
 import { Platform } from 'react-native';
 import { useAuth } from '@/providers';
@@ -47,7 +47,7 @@ type IYoasobiChoiceBoxProps = {
   onCloseDuration: () => void;
   onPressDay: (day: DayOfWeek) => void;
   onPressRandomDay: () => void;
-  onChangeStartTime: (event: DateTimePickerEvent, date?: Date) => void;
+  onChangeStartTime: (event: DateTimePickerChangeEvent, date: Date) => void;
   onIncreaseDuration: () => void;
   onDecreaseDuration: () => void;
   onCheckMidnightNotification: (checked: boolean) => void;
@@ -197,7 +197,12 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
             </Stack>
             {isPlatformAndroid ? (
               isShowStartTime && (
-                <RNDateTimePicker value={startTimeValue} mode="time" display="spinner" onChange={onChangeStartTime} />
+                <RNDateTimePicker
+                  value={startTimeValue}
+                  mode="time"
+                  display="spinner"
+                  onValueChange={onChangeStartTime}
+                />
               )
             ) : (
               <Sheet
@@ -232,7 +237,7 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
                     mode="time"
                     display="spinner"
                     textColor="#FDE8D6"
-                    onChange={onChangeStartTime}
+                    onValueChange={onChangeStartTime}
                   />
                 </Sheet.Frame>
               </Sheet>
@@ -562,15 +567,11 @@ export const HomeScreen = memo(() => {
     setIsDurationSheetOpen(false);
   }, []);
 
-  const handleChangeStartTime = useCallback((event: DateTimePickerEvent, startTime?: Date) => {
+  const handleChangeStartTime = useCallback((event: DateTimePickerChangeEvent, startTime: Date) => {
     if (Platform.OS === 'android') {
       setIsStartTimeSheetOpen(false);
     }
 
-    const isStartTimeUpdated = event.type === 'set' && startTime;
-    if (!isStartTimeUpdated) {
-      return;
-    }
     setNewYoasobiDate((prev) => {
       const updatedDate = new Date(prev);
       updatedDate.setHours(startTime.getHours());
