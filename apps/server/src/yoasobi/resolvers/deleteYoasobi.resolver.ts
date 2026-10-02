@@ -1,4 +1,3 @@
-// implement deleteYoasobi resolver here. before implementing, check other resolvers's structure and follow the same pattern.
 import { Resolver, Mutation, Args } from '@nestjs/graphql';
 import { DeleteYoasobiInputDto, DeleteYoasobiOutputDto } from '../dto';
 import { DeleteYoasobiService } from '../services';

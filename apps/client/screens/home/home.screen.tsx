@@ -20,7 +20,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useFocusEffect } from 'expo-router';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import RNDateTimePicker, { DateTimePickerChangeEvent } from '@react-native-community/datetimepicker';
-import { Button, ColorTokens, Progress, ScrollView, Separator, Sheet, Stack, Switch, Text } from 'tamagui';
+import { Button, ColorTokens, Progress, RadioGroup, ScrollView, Separator, Sheet, Stack, Switch, Text } from 'tamagui';
 import { Platform } from 'react-native';
 import { useAuth } from '@/providers';
 
@@ -120,7 +120,19 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
             </Text>
           </Stack>
           <Stack width="$fluid" justify="center" gap="$size.x2_5">
-            <Stack width="$fluid" flexDirection="row" justify="space-between" items="center">
+            <RadioGroup
+              width="$fluid"
+              flexDirection="row"
+              justify="space-between"
+              items="center"
+              orientation="horizontal"
+              value={selectedDayOfWeek}
+              onValueChange={(value) => {
+                const day = DAY_OF_WEEK_ARRAY.find((day) => day === value);
+                if (day !== undefined) {
+                  onPressDay(day);
+                }
+              }}>
               {DAY_OF_WEEK_ARRAY.map((day) => {
                 const isDaySelectable = selectableDaysOfWeek.includes(day);
                 const isDayActive = isDaySelectable && day === selectedDayOfWeek;
@@ -128,8 +140,10 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
                 const fontColor: ColorTokens = isDayActive ? '$colors.midnightPurple' : '$colors.moonSoftWhite';
                 const borderColor: ColorTokens = isDayActive ? '$colors.midnightPurple' : '$colors.cloudGray';
                 return (
-                  <Stack
+                  <RadioGroup.Item
                     key={day}
+                    value={day}
+                    unstyled
                     width="$size.x9"
                     height="$size.x12"
                     justify="center"
@@ -139,19 +153,16 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
                     borderColor={borderColor}
                     opacity={isDaySelectable ? 1 : 0.35}
                     animation="quick"
-                    style={{ borderRadius: 8 }}
-                    aria-disabled={!isDaySelectable}
-                    aria-checked={isDayActive}
+                    borderRadius={8}
                     disabled={!isDaySelectable}
-                    pressStyle={{ opacity: 0.6 }}
-                    onPress={() => onPressDay(day)}>
+                    pressStyle={{ opacity: 0.6 }}>
                     <Text fontSize="$7" fontWeight="$900" color={fontColor}>
                       {DAY_OF_WEEK_TEXT[day]}
                     </Text>
-                  </Stack>
+                  </RadioGroup.Item>
                 );
               })}
-            </Stack>
+            </RadioGroup>
             <Stack
               width="$fluid"
               flexDirection="row"
@@ -521,7 +532,6 @@ export const HomeScreen = memo(() => {
     if (!initialSelectedDayOfWeek) {
       return new Date(currentDate);
     }
-
     return getYoasobiDateForDay({
       weekStartDate,
       dayOfWeek: initialSelectedDayOfWeek,
@@ -531,7 +541,7 @@ export const HomeScreen = memo(() => {
   const [duration, setDuration] = useState<number>(MIN_YOASOBI_DURATION_MINUTES);
   const [isStartTimeSheetOpen, setIsStartTimeSheetOpen] = useState<boolean>(false);
   const [isDurationSheetOpen, setIsDurationSheetOpen] = useState<boolean>(false);
-  const [getWeeklyYoasobiQuery] = useGetWeeklyYoasobiLazyQuery();
+  const [getWeeklyYoasobiQuery, { loading: isExistedYoasobiLoading }] = useGetWeeklyYoasobiLazyQuery();
   const [createYoasobiMutation] = useCreateYoasobiMutation();
 
   const handlePressDay = useCallback(
@@ -759,6 +769,7 @@ export const HomeScreen = memo(() => {
                   opacity: 0.8,
                   scale: 0.98,
                 }}
+                disabled={isExistedYoasobiLoading}
                 onPress={handlePressCreateYoasobi}>
                 <Text fontSize="$8" fontWeight="$800" color="$colors.midnightPurple">
                   생성하기
