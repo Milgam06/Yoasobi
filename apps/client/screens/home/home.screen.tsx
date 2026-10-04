@@ -541,8 +541,96 @@ export const HomeScreen = memo(() => {
   const [duration, setDuration] = useState<number>(MIN_YOASOBI_DURATION_MINUTES);
   const [isStartTimeSheetOpen, setIsStartTimeSheetOpen] = useState<boolean>(false);
   const [isDurationSheetOpen, setIsDurationSheetOpen] = useState<boolean>(false);
-  const [getWeeklyYoasobiQuery, { loading: isExistedYoasobiLoading }] = useGetWeeklyYoasobiLazyQuery();
-  const [createYoasobiMutation] = useCreateYoasobiMutation();
+  const [
+    getWeeklyYoasobiQuery,
+    {
+      called: isWeeklyYoasobiCalled,
+      loading: isExistedYoasobiLoading,
+      error: weeklyYoasobiError,
+      data: weeklyYoasobiData,
+    },
+  ] = useGetWeeklyYoasobiLazyQuery({
+    fetchPolicy: 'network-only',
+    errorPolicy: 'none',
+  });
+  const [createYoasobiMutation, { loading: isCreatingYoasobi }] = useCreateYoasobiMutation();
+
+  const isWeeklyYoasobiResolved =
+    isReady &&
+    !!userId &&
+    isWeeklyYoasobiCalled &&
+    !isExistedYoasobiLoading &&
+    !weeklyYoasobiError &&
+    weeklyYoasobiData?.getYoasobi !== undefined;
+
+  const isWeeklyYoasobiEmpty = isWeeklyYoasobiResolved && weeklyYoasobiData?.getYoasobi.yoasobi === null;
+
+  const canCreateYoasobi =
+    isWeeklyYoasobiEmpty &&
+    existedYoasobi === null &&
+    !isCreatingYoasobi &&
+    selectedDayOfWeek !== null &&
+    selectableDaysOfWeek.includes(selectedDayOfWeek);
+
+  // screen shower condition
+  // const isWaitingForWeeklyYoasobi = !isReady || !userId || !isWeeklyYoasobiCalled || isExistedYoasobiLoading;
+  // const isWeeklyYoasobiFailed = !isWaitingForWeeklyYoasobi && (Boolean(weeklyYoasobiError) || !isWeeklyYoasobiResolved);
+
+  const fetchWeeklyYoasobi = useCallback(async () => {
+    if (!userId) {
+      return;
+    }
+    const { data } = await getWeeklyYoasobiQuery({
+      variables: {
+        input: {
+          userId,
+          weekStartDate: weekStartDate.toISOString(),
+        },
+      },
+    });
+    const yoasobi = data?.getYoasobi.yoasobi;
+    setExistedYoasobi(
+      yoasobi
+        ? {
+            ...yoasobi,
+            yoasobiDate: parseDateTime(yoasobi.yoasobiDate),
+            alarmTime: parseDateTime(yoasobi.alarmTime),
+            createdAt: parseDateTime(yoasobi.createdAt),
+          }
+        : null,
+    );
+  }, [getWeeklyYoasobiQuery, userId, weekStartDate]);
+
+  const createNewYoasobi = useCallback(async () => {
+    if (!userId || !canCreateYoasobi) {
+      return;
+    }
+    const { data } = await createYoasobiMutation({
+      variables: {
+        input: {
+          userId,
+          dayOfWeek: selectedDayOfWeek,
+          yoasobiDate: newYoasobiDate.toISOString(),
+          alarmTime: newYoasobiDate.toISOString(),
+          duration,
+        },
+      },
+      fetchPolicy: 'network-only',
+    });
+
+    const createdYoasobi = data?.createYoasobi.yoasobi;
+
+    setExistedYoasobi(
+      createdYoasobi
+        ? {
+            ...createdYoasobi,
+            yoasobiDate: parseDateTime(createdYoasobi.yoasobiDate),
+            alarmTime: parseDateTime(createdYoasobi.alarmTime),
+            createdAt: parseDateTime(createdYoasobi.createdAt),
+          }
+        : null,
+    );
+  }, [canCreateYoasobi, createYoasobiMutation, duration, newYoasobiDate, selectedDayOfWeek, userId]);
 
   const handlePressDay = useCallback(
     (day: DayOfWeek) => {
@@ -581,7 +669,6 @@ export const HomeScreen = memo(() => {
     if (Platform.OS === 'android') {
       setIsStartTimeSheetOpen(false);
     }
-
     setNewYoasobiDate((prev) => {
       const updatedDate = new Date(prev);
       updatedDate.setHours(startTime.getHours());
@@ -620,63 +707,6 @@ export const HomeScreen = memo(() => {
 
     handlePressDay(selectedRandomDay);
   }, [handlePressDay, selectableDaysOfWeek]);
-
-  const fetchWeeklyYoasobi = useCallback(async () => {
-    if (!userId) {
-      return;
-    }
-    const { data } = await getWeeklyYoasobiQuery({
-      variables: {
-        input: {
-          userId,
-          weekStartDate: weekStartDate.toISOString(),
-        },
-      },
-    });
-    const yoasobi = data?.getYoasobi.yoasobi;
-    setExistedYoasobi(
-      yoasobi
-        ? {
-            ...yoasobi,
-            yoasobiDate: parseDateTime(yoasobi.yoasobiDate),
-            alarmTime: parseDateTime(yoasobi.alarmTime),
-            createdAt: parseDateTime(yoasobi.createdAt),
-          }
-        : null,
-    );
-  }, [getWeeklyYoasobiQuery, userId, weekStartDate]);
-
-  const createNewYoasobi = useCallback(async () => {
-    const isSelectedDayValid = selectedDayOfWeek && selectableDaysOfWeek.includes(selectedDayOfWeek);
-    if (!userId || !isSelectedDayValid) {
-      return;
-    }
-    const { data } = await createYoasobiMutation({
-      variables: {
-        input: {
-          userId,
-          dayOfWeek: selectedDayOfWeek,
-          yoasobiDate: newYoasobiDate.toISOString(),
-          alarmTime: newYoasobiDate.toISOString(),
-          duration,
-        },
-      },
-      fetchPolicy: 'network-only',
-    });
-
-    const createdYoasobi = data?.createYoasobi.yoasobi;
-
-    setExistedYoasobi(
-      createdYoasobi
-        ? {
-            ...createdYoasobi,
-            yoasobiDate: parseDateTime(createdYoasobi.yoasobiDate),
-            alarmTime: parseDateTime(createdYoasobi.alarmTime),
-            createdAt: parseDateTime(createdYoasobi.createdAt),
-          }
-        : null,
-    );
-  }, [createYoasobiMutation, duration, newYoasobiDate, selectableDaysOfWeek, selectedDayOfWeek, userId]);
 
   const handlePressCreateYoasobi = useCallback(async () => {
     await createNewYoasobi();
@@ -769,7 +799,7 @@ export const HomeScreen = memo(() => {
                   opacity: 0.8,
                   scale: 0.98,
                 }}
-                disabled={isExistedYoasobiLoading}
+                disabled={!canCreateYoasobi}
                 onPress={handlePressCreateYoasobi}>
                 <Text fontSize="$8" fontWeight="$800" color="$colors.midnightPurple">
                   생성하기
