@@ -13,6 +13,12 @@ const config: CodegenConfig = {
         withHooks: true,
         withHOC: false,
         withComponent: false,
+        scalars: {
+          DateTime: {
+            input: 'string',
+            output: 'string',
+          },
+        },
       },
     },
   },
