@@ -22,6 +22,7 @@ import RNDateTimePicker, { DateTimePickerChangeEvent } from '@react-native-commu
 import { Button, ColorTokens, Progress, RadioGroup, ScrollView, Separator, Sheet, Stack, Text } from 'tamagui';
 import { Platform } from 'react-native';
 import { useAuth } from '@/providers';
+import { useBottomTabBarHeight } from 'expo-router/js-tabs';
 
 type IYoasobi = {
   id: string;
@@ -518,6 +519,7 @@ const YoasobiResultBox = memo<IYoasobiResultBoxProps>(({ yoasobiDay, yoasobiDate
 });
 
 export const HomeScreen = memo(() => {
+  const navbarHeight = useBottomTabBarHeight();
   const { userId, isReady } = useAuth();
 
   const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
@@ -755,7 +757,7 @@ export const HomeScreen = memo(() => {
 
   return (
     <DefaultLayout isBlur hasHeader>
-      <ScrollView flex={1}>
+      <ScrollView flex={1} contentContainerStyle={{ pb: navbarHeight + 16 }}>
         <Stack flex={1} px="$size.x2" gap="$size.x4">
           <Stack pt="$size.x4" gap="$size.x1_5">
             <Text fontSize="$7" fontWeight="$500" color="$colors.cloudGray">
