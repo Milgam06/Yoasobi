@@ -6,6 +6,7 @@ type IAlertProps = {
   isOpen: boolean;
   onClose: () => void;
   alertPadding?: GetThemeValueForKey<'padding'> | number;
+  alertMargin?: GetThemeValueForKey<'margin'> | number;
   contentBorderRadius?: number;
   bg?: GetThemeValueForKey<'backgroundColor'> | OpaqueColorValue;
   isErrorAlert?: boolean;
@@ -17,6 +18,7 @@ export const Alert = memo<IAlertProps>(
     isOpen,
     onClose,
     alertPadding = '$size.x2',
+    alertMargin = '$size.x4',
     contentBorderRadius = 0,
     bg = '$colors.midnightPurple',
     isErrorAlert = false,
@@ -40,6 +42,7 @@ export const Alert = memo<IAlertProps>(
             bg={bg}
             borderWidth={1}
             borderColor={isErrorAlert ? '$colors.emberRed' : '$colors.cloudGray'}
+            m={alertMargin}
             p={alertPadding}
             y={0}
             style={{ borderRadius: contentBorderRadius }}
