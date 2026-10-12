@@ -9,7 +9,6 @@ import {
 import { DayOfWeek, useCreateYoasobiMutation, useGetWeeklyYoasobiLazyQuery } from '@/libs';
 import { getDateByDayOfWeekUtil, getWeekStartDateUtil, parseDateTime } from '@/utils';
 import { faAlarmClock } from '@fortawesome/free-solid-svg-icons/faAlarmClock';
-import { faBell } from '@fortawesome/free-solid-svg-icons/faBell';
 import { faMinus } from '@fortawesome/free-solid-svg-icons/faMinus';
 import { faPlus } from '@fortawesome/free-solid-svg-icons/faPlus';
 import { faClock } from '@fortawesome/free-solid-svg-icons/faClock';
@@ -20,7 +19,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useFocusEffect } from 'expo-router';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import RNDateTimePicker, { DateTimePickerChangeEvent } from '@react-native-community/datetimepicker';
-import { Button, ColorTokens, Progress, RadioGroup, ScrollView, Separator, Sheet, Stack, Switch, Text } from 'tamagui';
+import { Button, ColorTokens, Progress, RadioGroup, ScrollView, Separator, Sheet, Stack, Text } from 'tamagui';
 import { Platform } from 'react-native';
 import { useAuth } from '@/providers';
 
@@ -359,7 +358,7 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
               </Sheet>
             )}
           </Stack>
-          <Stack
+          {/* <Stack
             width="$fluid"
             flexDirection="row"
             justify="space-between"
@@ -389,7 +388,8 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
               onCheckedChange={(checked) => onCheckMidnightNotification(checked)}>
               <Switch.Thumb animation="quick" bg="$colors.moonSoftWhite" />
             </Switch>
-          </Stack>
+          </Stack> */}
+          {/* Midnight Notification will be updated after back-notification feature is implemented */}
         </Stack>
       </BlurBox>
     );
