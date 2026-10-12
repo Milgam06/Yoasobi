@@ -541,6 +541,7 @@ export const HomeScreen = memo(() => {
   const [duration, setDuration] = useState<number>(MIN_YOASOBI_DURATION_MINUTES);
   const [isStartTimeSheetOpen, setIsStartTimeSheetOpen] = useState<boolean>(false);
   const [isDurationSheetOpen, setIsDurationSheetOpen] = useState<boolean>(false);
+  const [hasWeeklyYoasobiException, setHasWeeklyYoasobiException] = useState(false);
   const [
     getWeeklyYoasobiQuery,
     {
@@ -555,54 +556,60 @@ export const HomeScreen = memo(() => {
   });
   const [createYoasobiMutation, { loading: isCreatingYoasobi }] = useCreateYoasobiMutation();
 
-  const isWeeklyYoasobiResolved =
+  const isWeeklyYoasobiFetched =
     isReady &&
     !!userId &&
     isWeeklyYoasobiCalled &&
     !isExistedYoasobiLoading &&
     !weeklyYoasobiError &&
-    weeklyYoasobiData?.getYoasobi !== undefined;
+    !hasWeeklyYoasobiException &&
+    weeklyYoasobiData?.getYoasobi?.yoasobi !== undefined;
 
-  const isWeeklyYoasobiEmpty = isWeeklyYoasobiResolved && weeklyYoasobiData?.getYoasobi.yoasobi === null;
+  const isWeeklyYoasobiEmpty = isWeeklyYoasobiFetched && weeklyYoasobiData?.getYoasobi.yoasobi === null;
 
-  const canCreateYoasobi =
+  const isCreateYoasobiAvailable =
     isWeeklyYoasobiEmpty &&
     existedYoasobi === null &&
     !isCreatingYoasobi &&
     selectedDayOfWeek !== null &&
     selectableDaysOfWeek.includes(selectedDayOfWeek);
 
-  // screen shower condition
-  // const isWaitingForWeeklyYoasobi = !isReady || !userId || !isWeeklyYoasobiCalled || isExistedYoasobiLoading;
-  // const isWeeklyYoasobiFailed = !isWaitingForWeeklyYoasobi && (Boolean(weeklyYoasobiError) || !isWeeklyYoasobiResolved);
-
   const fetchWeeklyYoasobi = useCallback(async () => {
     if (!userId) {
       return;
     }
-    const { data } = await getWeeklyYoasobiQuery({
-      variables: {
-        input: {
-          userId,
-          weekStartDate: weekStartDate.toISOString(),
+    setHasWeeklyYoasobiException(false);
+    try {
+      const { data, error } = await getWeeklyYoasobiQuery({
+        variables: {
+          input: {
+            userId,
+            weekStartDate: weekStartDate.toISOString(),
+          },
         },
-      },
-    });
-    const yoasobi = data?.getYoasobi.yoasobi;
-    setExistedYoasobi(
-      yoasobi
-        ? {
-            ...yoasobi,
-            yoasobiDate: parseDateTime(yoasobi.yoasobiDate),
-            alarmTime: parseDateTime(yoasobi.alarmTime),
-            createdAt: parseDateTime(yoasobi.createdAt),
-          }
-        : null,
-    );
+      });
+      const yoasobi = data?.getYoasobi?.yoasobi;
+      const hasFetchingException = error || yoasobi === undefined;
+      if (hasFetchingException) {
+        return;
+      }
+      setExistedYoasobi(
+        yoasobi !== null
+          ? {
+              ...yoasobi,
+              yoasobiDate: parseDateTime(yoasobi.yoasobiDate),
+              alarmTime: parseDateTime(yoasobi.alarmTime),
+              createdAt: parseDateTime(yoasobi.createdAt),
+            }
+          : null,
+      );
+    } catch {
+      setHasWeeklyYoasobiException(true);
+    }
   }, [getWeeklyYoasobiQuery, userId, weekStartDate]);
 
   const createNewYoasobi = useCallback(async () => {
-    if (!userId || !canCreateYoasobi) {
+    if (!userId || !isCreateYoasobiAvailable) {
       return;
     }
     const { data } = await createYoasobiMutation({
@@ -630,7 +637,7 @@ export const HomeScreen = memo(() => {
           }
         : null,
     );
-  }, [canCreateYoasobi, createYoasobiMutation, duration, newYoasobiDate, selectedDayOfWeek, userId]);
+  }, [isCreateYoasobiAvailable, createYoasobiMutation, duration, newYoasobiDate, selectedDayOfWeek, userId]);
 
   const handlePressDay = useCallback(
     (day: DayOfWeek) => {
@@ -799,7 +806,7 @@ export const HomeScreen = memo(() => {
                   opacity: 0.8,
                   scale: 0.98,
                 }}
-                disabled={!canCreateYoasobi}
+                disabled={!isCreateYoasobiAvailable}
                 onPress={handlePressCreateYoasobi}>
                 <Text fontSize="$8" fontWeight="$800" color="$colors.midnightPurple">
                   생성하기
