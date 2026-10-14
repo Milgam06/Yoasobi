@@ -17,7 +17,7 @@ import { faBurst } from '@fortawesome/free-solid-svg-icons/faBurst';
 import { faMoon } from '@fortawesome/free-solid-svg-icons/faMoon';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useFocusEffect } from 'expo-router';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import RNDateTimePicker, { DateTimePickerChangeEvent } from '@react-native-community/datetimepicker';
 import {
   AlertDialog,
@@ -570,6 +570,7 @@ export const HomeScreen = memo(() => {
     errorPolicy: 'none',
   });
   const [createYoasobiMutation, { loading: isCreatingYoasobi }] = useCreateYoasobiMutation();
+  const isCreateYoasobiLockedRef = useRef(false);
 
   const isWeeklyYoasobiFetched =
     isReady &&
@@ -631,34 +632,40 @@ export const HomeScreen = memo(() => {
   }, [getWeeklyYoasobiQuery, userId, weekStartDate]);
 
   const createNewYoasobi = useCallback(async () => {
-    if (!userId || !isCreateYoasobiAvailable) {
+    const shouldBlockYoasobiCreation = isCreateYoasobiLockedRef.current || !userId || !isCreateYoasobiAvailable;
+    if (shouldBlockYoasobiCreation) {
       return;
     }
-    const { data } = await createYoasobiMutation({
-      variables: {
-        input: {
-          userId,
-          dayOfWeek: selectedDayOfWeek,
-          yoasobiDate: newYoasobiDate.toISOString(),
-          alarmTime: newYoasobiDate.toISOString(),
-          duration,
+    isCreateYoasobiLockedRef.current = true;
+    try {
+      const { data } = await createYoasobiMutation({
+        variables: {
+          input: {
+            userId,
+            dayOfWeek: selectedDayOfWeek,
+            yoasobiDate: newYoasobiDate.toISOString(),
+            alarmTime: newYoasobiDate.toISOString(),
+            duration,
+          },
         },
-      },
-      fetchPolicy: 'network-only',
-    });
+        fetchPolicy: 'network-only',
+      });
 
-    const createdYoasobi = data?.createYoasobi.yoasobi;
+      const createdYoasobi = data?.createYoasobi.yoasobi;
 
-    setExistedYoasobi(
-      createdYoasobi
-        ? {
-            ...createdYoasobi,
-            yoasobiDate: parseDateTime(createdYoasobi.yoasobiDate),
-            alarmTime: parseDateTime(createdYoasobi.alarmTime),
-            createdAt: parseDateTime(createdYoasobi.createdAt),
-          }
-        : null,
-    );
+      setExistedYoasobi(
+        createdYoasobi
+          ? {
+              ...createdYoasobi,
+              yoasobiDate: parseDateTime(createdYoasobi.yoasobiDate),
+              alarmTime: parseDateTime(createdYoasobi.alarmTime),
+              createdAt: parseDateTime(createdYoasobi.createdAt),
+            }
+          : null,
+      );
+    } finally {
+      isCreateYoasobiLockedRef.current = false;
+    }
   }, [isCreateYoasobiAvailable, createYoasobiMutation, duration, newYoasobiDate, selectedDayOfWeek, userId]);
 
   const handlePressDay = useCallback(
