@@ -25,7 +25,8 @@ export const GreetingScreen = memo(() => {
               shadowColor="$colors.lampYellow"
               shadowOpacity={1}
               shadowRadius={16}
-              shadowOffset={{ width: 0, height: 2 }}>
+              overflow="visible"
+              shadowOffset={{ width: 0, height: 0 }}>
               YOASOBI
             </Text>
             <Text fontSize="$8" fontWeight="$300" color="$colors.moonSoftWhite">
@@ -48,7 +49,7 @@ export const GreetingScreen = memo(() => {
             width="$fluid"
             height="auto"
             bg="$colors.moonSoftWhite"
-            py="$size.x5"
+            py="$size.x3"
             borderTopLeftRadius="$size.x5"
             borderTopRightRadius="$size.x5"
             borderBottomLeftRadius="$size.x5"
@@ -68,7 +69,7 @@ export const GreetingScreen = memo(() => {
             bg="$colors.midnightPurple"
             borderWidth={1}
             borderColor="$colors.cloudGray"
-            py="$size.x5"
+            py="$size.x3"
             borderTopLeftRadius="$size.x5"
             borderTopRightRadius="$size.x5"
             borderBottomLeftRadius="$size.x5"

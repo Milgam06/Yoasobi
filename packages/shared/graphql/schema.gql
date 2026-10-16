@@ -36,6 +36,10 @@ type GetYoasobiOutputDto {
   yoasobi: YoasobiEntity
 }
 
+type DeleteYoasobiOutputDto {
+  success: Boolean!
+}
+
 type CreateUserOutputDto {
   user: UserEntity!
 }
@@ -79,6 +83,7 @@ type Mutation {
   createUser(input: CreateUserInputDto!): CreateUserOutputDto!
   deleteUser(input: DeleteUserInputDto!): DeleteUserOutputDto!
   createYoasobi(input: CreateYoasobiInputDto!): CreateYoasobiOutputDto!
+  deleteYoasobi(input: DeleteYoasobiInputDto!): DeleteYoasobiOutputDto!
 }
 
 input CreateUserInputDto {
@@ -97,4 +102,8 @@ input CreateYoasobiInputDto {
   yoasobiDate: DateTime!
   alarmTime: DateTime!
   duration: Int!
+}
+
+input DeleteYoasobiInputDto {
+  yoasobiId: String!
 }
