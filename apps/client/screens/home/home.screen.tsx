@@ -36,6 +36,10 @@ import { Platform } from 'react-native';
 import { useAuth } from '@/providers';
 import { useBottomTabBarHeight } from 'expo-router/js-tabs';
 
+type IHomeScreenAlert = 'fetchingIssue' | 'creationIssue' | null;
+
+type IYoasobiChoiceBoxSheetType = 'startTime' | 'duration' | null;
+
 type IYoasobi = {
   id: string;
   yoasobiDate: Date;
@@ -49,14 +53,12 @@ type IYoasobiChoiceBoxProps = {
   selectedDayOfWeek: DayOfWeek;
   selectableDaysOfWeek: DayOfWeek[];
   isMidnightNotificationEnabled: boolean;
-  isShowStartTime: boolean;
-  isShowDuration: boolean;
+  activeSheet: IYoasobiChoiceBoxSheetType;
   startTimeValue: Date;
   durationValue: number;
   onPressShowStartTime: () => void;
   onPressShowDuration: () => void;
-  onCloseStartTime: () => void;
-  onCloseDuration: () => void;
+  onCloseActiveSheet: () => void;
   onPressDay: (day: DayOfWeek) => void;
   onPressRandomDay: () => void;
   onChangeStartTime: (event: DateTimePickerChangeEvent, date: Date) => void;
@@ -97,14 +99,12 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
     selectedDayOfWeek,
     selectableDaysOfWeek,
     isMidnightNotificationEnabled,
-    isShowStartTime,
-    isShowDuration,
+    activeSheet,
     startTimeValue,
     durationValue,
     onPressShowStartTime,
     onPressShowDuration,
-    onCloseStartTime,
-    onCloseDuration,
+    onCloseActiveSheet,
     onPressDay,
     onPressRandomDay,
     onCheckMidnightNotification,
@@ -113,6 +113,9 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
     onDecreaseDuration,
   }) => {
     const isPlatformAndroid = Platform.OS === 'android';
+
+    const isShowStartTime = activeSheet === 'startTime';
+    const isShowDuration = activeSheet === 'duration';
 
     const startTimeText = useMemo(() => {
       const hours = startTimeValue.getHours().toString().padStart(2, '0');
@@ -225,13 +228,14 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
                   mode="time"
                   display="spinner"
                   onValueChange={onChangeStartTime}
+                  onDismiss={onCloseActiveSheet}
                 />
               )
             ) : (
               <Sheet
                 modal
                 open={isShowStartTime}
-                onOpenChange={(open: boolean) => !open && onCloseStartTime()}
+                onOpenChange={(open: boolean) => !open && onCloseActiveSheet()}
                 snapPoints={[36]}
                 dismissOnSnapToBottom
                 animation="quick">
@@ -249,7 +253,7 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
                   borderTopLeftRadius="$size.x3"
                   borderTopRightRadius="$size.x3">
                   <Stack width="$fluid" justify="center" items="flex-end" px="$size.x1">
-                    <Stack justify="center" items="center" onPress={onCloseStartTime}>
+                    <Stack justify="center" items="center" onPress={onCloseActiveSheet}>
                       <Text fontSize="$5" fontWeight="$700" color="$colors.moonSoftWhite">
                         완료
                       </Text>
@@ -286,7 +290,7 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
               <Sheet
                 modal
                 open={isShowDuration}
-                onOpenChange={(open: boolean) => !open && onCloseDuration()}
+                onOpenChange={(open: boolean) => !open && onCloseActiveSheet()}
                 snapPoints={[32]}
                 moveOnKeyboardChange
                 dismissOnSnapToBottom
@@ -309,7 +313,7 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
                       <Text fontSize="$7" fontWeight="$900" color="$colors.moonSoftWhite">
                         소요 시간
                       </Text>
-                      <Stack justify="center" items="center" onPress={onCloseDuration}>
+                      <Stack justify="center" items="center" onPress={onCloseActiveSheet}>
                         <Text fontSize="$5" fontWeight="$700" color="$colors.moonSoftWhite">
                           완료
                         </Text>
@@ -540,8 +544,13 @@ export const HomeScreen = memo(() => {
   const initialSelectedDayOfWeek = selectableDaysOfWeek[0] ?? null;
 
   const [isMidnightNotificationEnabled, setIsMidnightNotificationEnabled] = useState<boolean>(false);
-  const [existedYoasobi, setExistedYoasobi] = useState<IYoasobi | null>(null);
+  const [currentYoasobi, setCurrentYoasobi] = useState<IYoasobi | null>(null);
   const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<DayOfWeek | null>(initialSelectedDayOfWeek);
+  const [duration, setDuration] = useState<number>(MIN_YOASOBI_DURATION_MINUTES);
+  const [activeSheet, setActiveSheet] = useState<IYoasobiChoiceBoxSheetType>(null);
+  const [hasWeeklyYoasobiException, setHasWeeklyYoasobiException] = useState(false);
+  const [homeScreenAlert, setHomeScreenAlert] = useState<IHomeScreenAlert>(null);
+  const [isCreationResultUnknown, setIsCreationResultUnknown] = useState(false);
   const [newYoasobiDate, setNewYoasobiDate] = useState<Date>(() => {
     if (!initialSelectedDayOfWeek) {
       return new Date(currentDate);
@@ -552,16 +561,15 @@ export const HomeScreen = memo(() => {
       previousDate: currentDate,
     });
   });
-  const [duration, setDuration] = useState<number>(MIN_YOASOBI_DURATION_MINUTES);
-  const [isStartTimeSheetOpen, setIsStartTimeSheetOpen] = useState<boolean>(false);
-  const [isDurationSheetOpen, setIsDurationSheetOpen] = useState<boolean>(false);
-  const [hasWeeklyYoasobiException, setHasWeeklyYoasobiException] = useState(false);
-  const [isWeeklyYoasobiAlertOpen, setIsWeeklyYoasobiAlertOpen] = useState(false);
+
+  const isCreationResultUnknownRef = useRef(false);
+  const isCreateYoasobiLockedRef = useRef(false);
+
   const [
     getWeeklyYoasobiQuery,
     {
       called: isWeeklyYoasobiCalled,
-      loading: isExistedYoasobiLoading,
+      loading: isWeeklyYoasobiLoading,
       error: weeklyYoasobiError,
       data: weeklyYoasobiData,
     },
@@ -569,38 +577,43 @@ export const HomeScreen = memo(() => {
     fetchPolicy: 'network-only',
     errorPolicy: 'none',
   });
-  const [createYoasobiMutation, { loading: isCreatingYoasobi }] = useCreateYoasobiMutation();
-  const isCreateYoasobiLockedRef = useRef(false);
+  const [createYoasobiMutation, { loading: isCreatingYoasobi }] = useCreateYoasobiMutation({ errorPolicy: 'none' });
 
-  const isWeeklyYoasobiFetched =
-    isReady &&
-    !!userId &&
-    isWeeklyYoasobiCalled &&
-    !isExistedYoasobiLoading &&
-    !weeklyYoasobiError &&
-    !hasWeeklyYoasobiException &&
-    weeklyYoasobiData?.getYoasobi?.yoasobi !== undefined;
+  const weeklyQueryStatus =
+    !isReady || !userId || !isWeeklyYoasobiCalled || isWeeklyYoasobiLoading
+      ? 'loading'
+      : weeklyYoasobiError || hasWeeklyYoasobiException || weeklyYoasobiData?.getYoasobi?.yoasobi === undefined
+        ? 'error'
+        : 'ready';
 
-  const isWeeklyYoasobiEmpty = isWeeklyYoasobiFetched && weeklyYoasobiData?.getYoasobi.yoasobi === null;
+  const loadingCondition = weeklyQueryStatus === 'loading';
+  const fetchingErrorCondition = weeklyQueryStatus === 'error';
+  const contentCondition = weeklyQueryStatus === 'ready';
+  const resultCondition = currentYoasobi !== null;
+  const creationFormCondition = !resultCondition && selectedDayOfWeek !== null && selectableDaysOfWeek.length > 0;
+  const weekCompleteCondition = !resultCondition && !creationFormCondition;
 
-  const isCreateYoasobiAvailable =
-    isWeeklyYoasobiEmpty &&
-    existedYoasobi === null &&
+  const createAllowedCondition =
+    weeklyQueryStatus === 'ready' &&
+    weeklyYoasobiData?.getYoasobi?.yoasobi === null &&
+    currentYoasobi === null &&
     !isCreatingYoasobi &&
+    !isCreationResultUnknown &&
     selectedDayOfWeek !== null &&
     selectableDaysOfWeek.includes(selectedDayOfWeek);
+  const recordCheckDisabledCondition = loadingCondition || isCreatingYoasobi;
 
-  const isWaitingForWeeklyYoasobi = !isReady || !userId || !isWeeklyYoasobiCalled || isExistedYoasobiLoading;
-  const isWeeklyYoasobiFailed = !isWaitingForWeeklyYoasobi && !isWeeklyYoasobiFetched;
+  const fetchingAlertCondition = homeScreenAlert === 'fetchingIssue' && fetchingErrorCondition;
+  const creationAlertCondition = homeScreenAlert === 'creationIssue';
 
   const fetchWeeklyYoasobi = useCallback(async () => {
     if (!userId) {
       return;
     }
-    setIsWeeklyYoasobiAlertOpen(false);
+    setHomeScreenAlert(null);
     setHasWeeklyYoasobiException(false);
     try {
-      const { data, error, errors } = await getWeeklyYoasobiQuery({
+      const { data, error } = await getWeeklyYoasobiQuery({
         variables: {
           input: {
             userId,
@@ -609,13 +622,11 @@ export const HomeScreen = memo(() => {
         },
       });
       const yoasobi = data?.getYoasobi?.yoasobi;
-      const hasFetchingException = error || errors?.length || yoasobi === undefined;
+      const hasFetchingException = error || yoasobi === undefined;
       if (hasFetchingException) {
-        setHasWeeklyYoasobiException(true);
-        setIsWeeklyYoasobiAlertOpen(true);
-        return;
+        throw new Error('Yoasobi fetching result is missing');
       }
-      setExistedYoasobi(
+      setCurrentYoasobi(
         yoasobi !== null
           ? {
               ...yoasobi,
@@ -625,20 +636,23 @@ export const HomeScreen = memo(() => {
             }
           : null,
       );
+      isCreationResultUnknownRef.current = false;
+      setIsCreationResultUnknown(false);
     } catch {
       setHasWeeklyYoasobiException(true);
-      setIsWeeklyYoasobiAlertOpen(true);
+      setHomeScreenAlert('fetchingIssue');
     }
   }, [getWeeklyYoasobiQuery, userId, weekStartDate]);
 
   const createNewYoasobi = useCallback(async () => {
-    const shouldBlockYoasobiCreation = isCreateYoasobiLockedRef.current || !userId || !isCreateYoasobiAvailable;
+    const shouldBlockYoasobiCreation =
+      isCreateYoasobiLockedRef.current || isCreationResultUnknownRef.current || !userId || !createAllowedCondition;
     if (shouldBlockYoasobiCreation) {
       return;
     }
     isCreateYoasobiLockedRef.current = true;
     try {
-      const { data } = await createYoasobiMutation({
+      const { data, errors } = await createYoasobiMutation({
         variables: {
           input: {
             userId,
@@ -651,22 +665,25 @@ export const HomeScreen = memo(() => {
         fetchPolicy: 'network-only',
       });
 
-      const createdYoasobi = data?.createYoasobi.yoasobi;
+      const createdYoasobi = data?.createYoasobi?.yoasobi;
+      if (errors?.length || !createdYoasobi) {
+        throw new Error('Yoasobi creation result is missing');
+      }
 
-      setExistedYoasobi(
-        createdYoasobi
-          ? {
-              ...createdYoasobi,
-              yoasobiDate: parseDateTime(createdYoasobi.yoasobiDate),
-              alarmTime: parseDateTime(createdYoasobi.alarmTime),
-              createdAt: parseDateTime(createdYoasobi.createdAt),
-            }
-          : null,
-      );
+      setCurrentYoasobi({
+        ...createdYoasobi,
+        yoasobiDate: parseDateTime(createdYoasobi.yoasobiDate),
+        alarmTime: parseDateTime(createdYoasobi.alarmTime),
+        createdAt: parseDateTime(createdYoasobi.createdAt),
+      });
+    } catch {
+      isCreationResultUnknownRef.current = true;
+      setIsCreationResultUnknown(true);
+      setHomeScreenAlert('creationIssue');
     } finally {
       isCreateYoasobiLockedRef.current = false;
     }
-  }, [isCreateYoasobiAvailable, createYoasobiMutation, duration, newYoasobiDate, selectedDayOfWeek, userId]);
+  }, [createAllowedCondition, createYoasobiMutation, duration, newYoasobiDate, selectedDayOfWeek, userId]);
 
   const handlePressDay = useCallback(
     (day: DayOfWeek) => {
@@ -684,26 +701,19 @@ export const HomeScreen = memo(() => {
   }, []);
 
   const handleShowStartTimeSheet = useCallback(() => {
-    setIsDurationSheetOpen(false);
-    setIsStartTimeSheetOpen(true);
+    setActiveSheet('startTime');
   }, []);
 
   const handleShowDurationSheet = useCallback(() => {
-    setIsStartTimeSheetOpen(false);
-    setIsDurationSheetOpen(true);
+    setActiveSheet('duration');
   }, []);
 
-  const handleCloseStartTimeSheet = useCallback(() => {
-    setIsStartTimeSheetOpen(false);
+  const handleCloseActiveSheet = useCallback(() => {
+    setActiveSheet(null);
   }, []);
-
-  const handleCloseDurationSheet = useCallback(() => {
-    setIsDurationSheetOpen(false);
-  }, []);
-
   const handleChangeStartTime = useCallback((event: DateTimePickerChangeEvent, startTime: Date) => {
     if (Platform.OS === 'android') {
-      setIsStartTimeSheetOpen(false);
+      setActiveSheet(null);
     }
     setNewYoasobiDate((prev) => {
       const updatedDate = new Date(prev);
@@ -780,11 +790,9 @@ export const HomeScreen = memo(() => {
     }, []),
   );
 
-  const isCreationAvailable = selectedDayOfWeek !== null && selectableDaysOfWeek.length > 0;
-
   return (
     <DefaultLayout isBlur hasHeader>
-      {isWaitingForWeeklyYoasobi && (
+      {loadingCondition && (
         <Stack flex={1} justify="center" items="center" gap="$size.x4" pb={navbarHeight}>
           <Spinner size="large" color="$colors.midnightPurple_Darker" />
           <Text fontSize="$6" fontWeight="$700" color="$colors.cloudGray" style={{ textAlign: 'center' }}>
@@ -792,17 +800,17 @@ export const HomeScreen = memo(() => {
           </Text>
         </Stack>
       )}
-      {isWeeklyYoasobiFailed && (
+      {fetchingErrorCondition && (
         <Stack flex={1} justify="center" items="center" gap="$size.x3" pb={navbarHeight}>
           <Text color="$colors.cloudGray" style={{ textAlign: 'center' }}>
             이번 주 기록을 확인하지 못했어요.
           </Text>
-          <Button disabled={isCreatingYoasobi} onPress={() => setIsWeeklyYoasobiAlertOpen(true)}>
+          <Button disabled={isCreatingYoasobi} onPress={() => setHomeScreenAlert('fetchingIssue')}>
             다시 시도
           </Button>
         </Stack>
       )}
-      {isWeeklyYoasobiFetched && (
+      {contentCondition && (
         <ScrollView flex={1} contentContainerStyle={{ pb: navbarHeight + 16 }}>
           <Stack flex={1} px="$size.x2" gap="$size.x4">
             <Stack pt="$size.x4" gap="$size.x1_5">
@@ -813,20 +821,20 @@ export const HomeScreen = memo(() => {
                 새벽 산책 해볼까요?
               </Text>
             </Stack>
-            {existedYoasobi ? (
+            {resultCondition && (
               <YoasobiResultBox
-                yoasobiDay={existedYoasobi.dayOfWeek}
-                yoasobiDate={existedYoasobi.yoasobiDate}
-                createdDate={existedYoasobi.createdAt}
+                yoasobiDay={currentYoasobi.dayOfWeek}
+                yoasobiDate={currentYoasobi.yoasobiDate}
+                createdDate={currentYoasobi.createdAt}
               />
-            ) : isCreationAvailable ? (
+            )}
+            {creationFormCondition && (
               <Stack flex={1} width="$fluid" gap="$size.x6">
                 <YoasobiChoiceBox
                   selectedDayOfWeek={selectedDayOfWeek}
                   selectableDaysOfWeek={selectableDaysOfWeek}
                   isMidnightNotificationEnabled={isMidnightNotificationEnabled}
-                  isShowStartTime={isStartTimeSheetOpen}
-                  isShowDuration={isDurationSheetOpen}
+                  activeSheet={activeSheet}
                   startTimeValue={newYoasobiDate}
                   durationValue={duration}
                   onChangeStartTime={(event, date) => handleChangeStartTime(event, date)}
@@ -834,42 +842,68 @@ export const HomeScreen = memo(() => {
                   onDecreaseDuration={handleDecreaseDuration}
                   onPressShowStartTime={handleShowStartTimeSheet}
                   onPressShowDuration={handleShowDurationSheet}
-                  onCloseStartTime={handleCloseStartTimeSheet}
-                  onCloseDuration={handleCloseDurationSheet}
+                  onCloseActiveSheet={handleCloseActiveSheet}
                   onPressDay={handlePressDay}
                   onPressRandomDay={handlePressRandomDay}
                   onCheckMidnightNotification={handleCheckMidnightNotification}
                 />
-                <Button
-                  width="$fluid"
-                  height="auto"
-                  py="$size.x2"
-                  bg="$colors.lampYellow"
-                  borderTopLeftRadius="$size.x4"
-                  borderTopRightRadius="$size.x4"
-                  borderBottomLeftRadius="$size.x4"
-                  borderBottomRightRadius="$size.x4"
-                  pressStyle={{
-                    bg: '$colors.lampYellow',
-                    opacity: 0.8,
-                    scale: 0.98,
-                  }}
-                  disabled={!isCreateYoasobiAvailable}
-                  onPress={handlePressCreateYoasobi}>
-                  <Text fontSize="$8" fontWeight="$800" color="$colors.midnightPurple">
-                    생성하기
-                  </Text>
-                </Button>
+                {!isCreationResultUnknown ? (
+                  <Stack width="$fluid" gap="$size.x2" justify="center" items="center">
+                    <Stack flexDirection="column">
+                      <Text color="$colors.cloudGray">생성 여부를 확인하지 못했어요.</Text>
+                      <Text color="$colors.cloudGray">이번 주 기록을 확인해 주세요.</Text>
+                    </Stack>
+                    <Button
+                      width="$fluid"
+                      height="auto"
+                      py="$size.x2"
+                      bg="$colors.lampYellow"
+                      borderTopLeftRadius="$size.x4"
+                      borderTopRightRadius="$size.x4"
+                      borderBottomLeftRadius="$size.x4"
+                      borderBottomRightRadius="$size.x4"
+                      pressStyle={{
+                        bg: '$colors.lampYellow',
+                        opacity: 0.8,
+                        scale: 0.98,
+                      }}
+                      onPress={() => setHomeScreenAlert('creationIssue')}>
+                      <Text fontSize="$8" fontWeight="$800" color="$colors.midnightPurple">
+                        기록 확인
+                      </Text>
+                    </Button>
+                  </Stack>
+                ) : (
+                  <Button
+                    width="$fluid"
+                    height="auto"
+                    py="$size.x2"
+                    bg="$colors.lampYellow"
+                    borderTopLeftRadius="$size.x4"
+                    borderTopRightRadius="$size.x4"
+                    borderBottomLeftRadius="$size.x4"
+                    borderBottomRightRadius="$size.x4"
+                    pressStyle={{
+                      bg: '$colors.lampYellow',
+                      opacity: 0.8,
+                      scale: 0.98,
+                    }}
+                    disabled={!createAllowedCondition}
+                    onPress={handlePressCreateYoasobi}>
+                    <Text fontSize="$8" fontWeight="$800" color="$colors.midnightPurple">
+                      생성하기
+                    </Text>
+                  </Button>
+                )}
               </Stack>
-            ) : (
-              <YoasobiWeekCompleteBox />
             )}
+            {weekCompleteCondition && <YoasobiWeekCompleteBox />}
           </Stack>
         </ScrollView>
       )}
       <Alert
-        isOpen={isWeeklyYoasobiAlertOpen && isWeeklyYoasobiFailed}
-        onClose={() => setIsWeeklyYoasobiAlertOpen(false)}
+        isOpen={fetchingAlertCondition}
+        onClose={() => setHomeScreenAlert(null)}
         alertPadding="$size.x4"
         contentBorderRadius={12}
         isErrorAlert>
@@ -887,7 +921,7 @@ export const HomeScreen = memo(() => {
               flex={1}
               height="$size.x10"
               bg="$colors.lampYellow"
-              disabled={isWaitingForWeeklyYoasobi || isCreatingYoasobi}
+              disabled={recordCheckDisabledCondition}
               pressStyle={{
                 bg: '$colors.lampYellow',
                 opacity: 0.8,
@@ -897,7 +931,43 @@ export const HomeScreen = memo(() => {
                 다시 시도
               </Text>
             </Button>
-            <Button flex={1} height="$size.x10" onPress={() => setIsWeeklyYoasobiAlertOpen(false)}>
+            <Button flex={1} height="$size.x10" onPress={() => setHomeScreenAlert(null)}>
+              <Text fontWeight="$700" color="$colors.lampYellow">
+                닫기
+              </Text>
+            </Button>
+          </Stack>
+        </Stack>
+      </Alert>
+      <Alert
+        isOpen={creationAlertCondition}
+        onClose={() => setHomeScreenAlert(null)}
+        alertPadding="$size.x4"
+        contentBorderRadius={12}
+        isErrorAlert>
+        <Stack width="$fluid" gap="$size.x4">
+          <AlertDialog.Title fontSize="$8" fontWeight="$700" color="$colors.moonSoftWhite">
+            생성 결과를 확인하지 못했어요
+          </AlertDialog.Title>
+          <AlertDialog.Description color="$colors.cloudGray">
+            기록이 이미 생성됐을 수 있어요. 다시 생성하기 전에 이번 주 기록을 확인해 주세요. 선택한 설정은 유지돼요.
+          </AlertDialog.Description>
+          <Stack width="$fluid" flexDirection="row" gap="$size.x2">
+            <Button
+              flex={1}
+              height="$size.x10"
+              bg="$colors.lampYellow"
+              disabled={recordCheckDisabledCondition}
+              pressStyle={{
+                bg: '$colors.lampYellow',
+                opacity: 0.8,
+              }}
+              onPress={() => fetchWeeklyYoasobi()}>
+              <Text fontWeight="$700" color="$colors.midnightPurple">
+                기록 확인
+              </Text>
+            </Button>
+            <Button flex={1} height="$size.x10" onPress={() => setHomeScreenAlert(null)}>
               <Text fontWeight="$700" color="$colors.lampYellow">
                 닫기
               </Text>
