@@ -829,7 +829,7 @@ export const HomeScreen = memo(() => {
               />
             )}
             {creationFormCondition && (
-              <Stack flex={1} width="$fluid" gap="$size.x6">
+              <Stack flex={1} width="$fluid" gap="$size.x4">
                 <YoasobiChoiceBox
                   selectedDayOfWeek={selectedDayOfWeek}
                   selectableDaysOfWeek={selectableDaysOfWeek}
@@ -848,31 +848,38 @@ export const HomeScreen = memo(() => {
                   onCheckMidnightNotification={handleCheckMidnightNotification}
                 />
                 {isCreationResultUnknown ? (
-                  <Stack width="$fluid" gap="$size.x2" justify="center" items="center">
-                    <Stack flexDirection="column">
-                      <Text color="$colors.cloudGray">생성 여부를 확인하지 못했어요.</Text>
-                      <Text color="$colors.cloudGray">이번 주 기록을 확인해 주세요.</Text>
+                  <BlurBox px="$size.x4">
+                    <Stack width="$fluid" flexDirection="row" justify="space-between" items="center">
+                      <Stack gap="$size.x0_5">
+                        <Text fontSize="$4" fontWeight="$700" color="$colors.moonSoftWhite">
+                          생성 여부를 확인하지 못했어요.
+                        </Text>
+                        <Text fontSize="$3" fontWeight="$500" color="$colors.cloudGray">
+                          이번 주 기록을 확인해 주세요.
+                        </Text>
+                      </Stack>
+                      <Button
+                        height="auto"
+                        px="$size.x2"
+                        py="$size.x2"
+                        bg="$colors.midnightPurple"
+                        borderColor="$colors.cloudGray"
+                        borderTopLeftRadius="$size.x2"
+                        borderTopRightRadius="$size.x2"
+                        borderBottomLeftRadius="$size.x2"
+                        borderBottomRightRadius="$size.x2"
+                        pressStyle={{
+                          bg: '$colors.midnightPurple',
+                          opacity: 0.8,
+                          scale: 0.98,
+                        }}
+                        onPress={() => setHomeScreenAlert('creationIssue')}>
+                        <Text fontWeight="$700" color="$colors.lampYellow">
+                          기록 확인
+                        </Text>
+                      </Button>
                     </Stack>
-                    <Button
-                      width="$fluid"
-                      height="auto"
-                      py="$size.x2"
-                      bg="$colors.lampYellow"
-                      borderTopLeftRadius="$size.x4"
-                      borderTopRightRadius="$size.x4"
-                      borderBottomLeftRadius="$size.x4"
-                      borderBottomRightRadius="$size.x4"
-                      pressStyle={{
-                        bg: '$colors.lampYellow',
-                        opacity: 0.8,
-                        scale: 0.98,
-                      }}
-                      onPress={() => setHomeScreenAlert('creationIssue')}>
-                      <Text fontSize="$8" fontWeight="$800" color="$colors.midnightPurple">
-                        기록 확인
-                      </Text>
-                    </Button>
-                  </Stack>
+                  </BlurBox>
                 ) : (
                   <Button
                     width="$fluid"
