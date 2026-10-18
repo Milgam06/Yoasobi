@@ -847,7 +847,7 @@ export const HomeScreen = memo(() => {
                   onPressRandomDay={handlePressRandomDay}
                   onCheckMidnightNotification={handleCheckMidnightNotification}
                 />
-                {!isCreationResultUnknown ? (
+                {isCreationResultUnknown ? (
                   <Stack width="$fluid" gap="$size.x2" justify="center" items="center">
                     <Stack flexDirection="column">
                       <Text color="$colors.cloudGray">생성 여부를 확인하지 못했어요.</Text>
