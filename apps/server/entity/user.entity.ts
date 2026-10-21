@@ -1,5 +1,5 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
-import { IsDate, IsString, IsUUID } from 'class-validator';
+import { IsDate, IsString, IsTimeZone, IsUUID } from 'class-validator';
 
 @ObjectType({ isAbstract: true })
 @InputType({ isAbstract: true })
@@ -13,7 +13,7 @@ export class UserEntity {
   name: string;
 
   @Field(() => String)
-  @IsString()
+  @IsTimeZone()
   timezone: string;
 
   @Field(() => Date)

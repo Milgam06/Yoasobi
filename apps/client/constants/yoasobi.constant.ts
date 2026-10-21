@@ -1,2 +1,3 @@
 export const MIN_YOASOBI_DURATION_MINUTES = 10;
 export const MAX_YOASOBI_DURATION_MINUTES = 180;
+export const MS_PER_DAY = 1000 * 60 * 60 * 24;
