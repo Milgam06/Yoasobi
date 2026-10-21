@@ -17,7 +17,7 @@ import { faBurst } from '@fortawesome/free-solid-svg-icons/faBurst';
 import { faMoon } from '@fortawesome/free-solid-svg-icons/faMoon';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useFocusEffect } from 'expo-router';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import RNDateTimePicker, { DateTimePickerChangeEvent } from '@react-native-community/datetimepicker';
 import {
   AlertDialog,
@@ -564,6 +564,9 @@ export const HomeScreen = memo(() => {
 
   const isCreationResultUnknownRef = useRef(false);
   const isCreateYoasobiLockedRef = useRef(false);
+  const latestWeeklyRequestIdRef = useRef(0);
+
+  const weekStartDateIso = weekStartDate.toISOString();
 
   const [
     getWeeklyYoasobiQuery,
@@ -607,9 +610,11 @@ export const HomeScreen = memo(() => {
   const creationAlertCondition = homeScreenAlert === 'creationIssue';
 
   const fetchWeeklyYoasobi = useCallback(async () => {
-    if (!userId) {
+    if (!isReady || !userId) {
       return;
     }
+    latestWeeklyRequestIdRef.current += 1;
+    const requestId = latestWeeklyRequestIdRef.current;
     setHomeScreenAlert(null);
     setHasWeeklyYoasobiException(false);
     try {
@@ -617,10 +622,13 @@ export const HomeScreen = memo(() => {
         variables: {
           input: {
             userId,
-            weekStartDate: weekStartDate.toISOString(),
+            weekStartDate: weekStartDateIso,
           },
         },
       });
+      if (requestId !== latestWeeklyRequestIdRef.current) {
+        return;
+      }
       const yoasobi = data?.getYoasobi?.yoasobi;
       const hasFetchingException = error || yoasobi === undefined;
       if (hasFetchingException) {
@@ -639,10 +647,13 @@ export const HomeScreen = memo(() => {
       isCreationResultUnknownRef.current = false;
       setIsCreationResultUnknown(false);
     } catch {
+      if (requestId !== latestWeeklyRequestIdRef.current) {
+        return;
+      }
       setHasWeeklyYoasobiException(true);
       setHomeScreenAlert('fetchingIssue');
     }
-  }, [getWeeklyYoasobiQuery, userId, weekStartDate]);
+  }, [getWeeklyYoasobiQuery, isReady, userId, weekStartDateIso]);
 
   const createNewYoasobi = useCallback(async () => {
     const shouldBlockYoasobiCreation =
@@ -664,12 +675,10 @@ export const HomeScreen = memo(() => {
         },
         fetchPolicy: 'network-only',
       });
-
       const createdYoasobi = data?.createYoasobi?.yoasobi;
       if (errors?.length || !createdYoasobi) {
         throw new Error('Yoasobi creation result is missing');
       }
-
       setCurrentYoasobi({
         ...createdYoasobi,
         yoasobiDate: parseDateTime(createdYoasobi.yoasobiDate),
@@ -711,6 +720,7 @@ export const HomeScreen = memo(() => {
   const handleCloseActiveSheet = useCallback(() => {
     setActiveSheet(null);
   }, []);
+
   const handleChangeStartTime = useCallback((event: DateTimePickerChangeEvent, startTime: Date) => {
     if (Platform.OS === 'android') {
       setActiveSheet(null);
@@ -747,16 +757,20 @@ export const HomeScreen = memo(() => {
     if (selectableDaysOfWeek.length === 0) {
       return;
     }
-
     const randomIndex = Math.floor(Math.random() * selectableDaysOfWeek.length);
     const selectedRandomDay = selectableDaysOfWeek[randomIndex];
-
     handlePressDay(selectedRandomDay);
   }, [handlePressDay, selectableDaysOfWeek]);
 
   const handlePressCreateYoasobi = useCallback(async () => {
     await createNewYoasobi();
   }, [createNewYoasobi]);
+
+  useLayoutEffect(() => {
+    return () => {
+      latestWeeklyRequestIdRef.current += 1;
+    };
+  }, [isReady, userId, weekStartDateIso]);
 
   useEffect(() => {
     if (isReady && userId) {
@@ -768,7 +782,6 @@ export const HomeScreen = memo(() => {
     if (selectedDayOfWeek && selectableDaysOfWeek.includes(selectedDayOfWeek)) {
       return;
     }
-
     const nextSelectedDayOfWeek = selectableDaysOfWeek[0] ?? null;
     setSelectedDayOfWeek(nextSelectedDayOfWeek);
 
