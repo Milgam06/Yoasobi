@@ -34,6 +34,13 @@ $ yarn install
 
 ## Running the app
 
+Set `DATABASE_URL`, `SUPABASE_URL`, and `SUPABASE_KEY` in `apps/server/.env`.
+Use the same Supabase project as the client and its public publishable/anon key,
+never a service-role key. Missing auth configuration stops server startup.
+GraphQL requests require `Authorization: Bearer <access_token>`; user IDs come
+from the verified token, not request inputs. `deleteUser` deletes only the app DB
+profile. `getUsers` is disabled for all callers.
+
 ```bash
 # development
 $ yarn run start
