@@ -16,7 +16,6 @@ export class AuthGuard implements CanActivate {
     const { req } = GqlExecutionContext.create(context).getContext<{
       req: IAuthRequest;
     }>();
-    console.log('Request is in AuthGuard', req.headers);
     const authorization = req?.headers?.authorization;
     const token =
       typeof authorization === 'string'
