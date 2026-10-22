@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma';
 import { DeleteYoasobiInputDto, DeleteYoasobiOutputDto } from '../dto';
 
@@ -8,10 +8,16 @@ export class DeleteYoasobiService {
 
   async execute({
     yoasobiId,
-  }: DeleteYoasobiInputDto): Promise<DeleteYoasobiOutputDto> {
-    await this.prismaService.yoasobi.delete({
-      where: { id: yoasobiId },
+    userId,
+  }: DeleteYoasobiInputDto & {
+    userId: string;
+  }): Promise<DeleteYoasobiOutputDto> {
+    const { count } = await this.prismaService.yoasobi.deleteMany({
+      where: { id: yoasobiId, userId },
     });
+    if (count === 0) {
+      throw new NotFoundException('Yoasobi not found');
+    }
     return { success: true };
   }
 }

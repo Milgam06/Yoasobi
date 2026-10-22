@@ -65,39 +65,28 @@ type GetUsersOutputDto {
 }
 
 type Query {
-  getUser(input: GetUserInputDto!): GetUserOutputDto!
+  getUser: GetUserOutputDto!
   getUsers: GetUsersOutputDto!
   getYoasobi(input: GetYoasobiInputDto!): GetYoasobiOutputDto!
 }
 
-input GetUserInputDto {
-  userId: String!
-}
-
 input GetYoasobiInputDto {
-  userId: String!
   weekStartDate: DateTime!
 }
 
 type Mutation {
   createUser(input: CreateUserInputDto!): CreateUserOutputDto!
-  deleteUser(input: DeleteUserInputDto!): DeleteUserOutputDto!
+  deleteUser: DeleteUserOutputDto!
   createYoasobi(input: CreateYoasobiInputDto!): CreateYoasobiOutputDto!
   deleteYoasobi(input: DeleteYoasobiInputDto!): DeleteYoasobiOutputDto!
 }
 
 input CreateUserInputDto {
-  userId: String!
   name: String!
   timezone: String!
 }
 
-input DeleteUserInputDto {
-  userId: String!
-}
-
 input CreateYoasobiInputDto {
-  userId: String!
   dayOfWeek: DayOfWeek!
   yoasobiDate: DateTime!
   alarmTime: DateTime!

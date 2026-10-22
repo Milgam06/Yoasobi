@@ -1,3 +1,4 @@
+import { CurrentUser, ICurrentUser } from 'src/auth';
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { CreateUserService } from '../services';
 import { CreateUserInputDto, CreateUserOutputDto } from '../dto';
@@ -9,7 +10,8 @@ export class CreateUserResolver {
   @Mutation(() => CreateUserOutputDto)
   async createUser(
     @Args('input') input: CreateUserInputDto,
+    @CurrentUser() user: ICurrentUser,
   ): Promise<CreateUserOutputDto> {
-    return await this.createUserService.execute(input);
+    return await this.createUserService.execute({ ...input, userId: user.id });
   }
 }
