@@ -6,11 +6,11 @@ import { Button, Stack, Text } from 'tamagui';
 export const GreetingScreen = memo(() => {
   const route = useRouter();
   const handlePressStart = useCallback(() => {
-    route.push({ pathname: '/auth/auth', params: { authType: 'signUp' } });
+    route.push({ pathname: '/auth', params: { authType: 'signUp' } });
   }, [route]);
 
   const handlePressLogin = useCallback(() => {
-    route.push({ pathname: '/auth/auth', params: { authType: 'login' } });
+    route.push({ pathname: '/auth', params: { authType: 'login' } });
   }, [route]);
 
   return (

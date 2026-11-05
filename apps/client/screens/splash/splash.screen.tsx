@@ -24,7 +24,7 @@ export const SplashScreen = memo(() => {
       if (session) {
         route.replace('/(tabs)/home');
       } else {
-        route.replace('/greeting/greeting');
+        route.replace('/greeting');
       }
     }, 3000);
 
