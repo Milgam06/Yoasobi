@@ -1,14 +1,10 @@
 import { DayOfWeek } from '@generated-prisma/enums';
 import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
-import { IsDate, IsEnum, IsInt, IsUUID } from 'class-validator';
+import { IsDate, IsEnum, IsInt, Min, Max } from 'class-validator';
 import { YoasobiEntity } from 'entity';
 
 @InputType()
 export class CreateYoasobiInputDto {
-  @Field(() => String)
-  @IsUUID()
-  userId: string;
-
   @Field(() => DayOfWeek)
   @IsEnum(DayOfWeek)
   dayOfWeek: DayOfWeek;
@@ -23,6 +19,8 @@ export class CreateYoasobiInputDto {
 
   @Field(() => Int)
   @IsInt()
+  @Min(10)
+  @Max(180)
   duration: number;
 }
 

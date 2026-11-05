@@ -22,7 +22,6 @@ export type Scalars = {
 export type CreateUserInputDto = {
   name: Scalars['String']['input'];
   timezone: Scalars['String']['input'];
-  userId: Scalars['String']['input'];
 };
 
 export type CreateUserOutputDto = {
@@ -34,7 +33,6 @@ export type CreateYoasobiInputDto = {
   alarmTime: Scalars['DateTime']['input'];
   dayOfWeek: DayOfWeek;
   duration: Scalars['Int']['input'];
-  userId: Scalars['String']['input'];
   yoasobiDate: Scalars['DateTime']['input'];
 };
 
@@ -53,10 +51,6 @@ export enum DayOfWeek {
   Wednesday = 'WEDNESDAY'
 }
 
-export type DeleteUserInputDto = {
-  userId: Scalars['String']['input'];
-};
-
 export type DeleteUserOutputDto = {
   __typename?: 'DeleteUserOutputDto';
   success: Scalars['Boolean']['output'];
@@ -71,10 +65,6 @@ export type DeleteYoasobiOutputDto = {
   success: Scalars['Boolean']['output'];
 };
 
-export type GetUserInputDto = {
-  userId: Scalars['String']['input'];
-};
-
 export type GetUserOutputDto = {
   __typename?: 'GetUserOutputDto';
   user?: Maybe<UserEntity>;
@@ -86,7 +76,6 @@ export type GetUsersOutputDto = {
 };
 
 export type GetYoasobiInputDto = {
-  userId: Scalars['String']['input'];
   weekStartDate: Scalars['DateTime']['input'];
 };
 
@@ -114,11 +103,6 @@ export type MutationCreateYoasobiArgs = {
 };
 
 
-export type MutationDeleteUserArgs = {
-  input: DeleteUserInputDto;
-};
-
-
 export type MutationDeleteYoasobiArgs = {
   input: DeleteYoasobiInputDto;
 };
@@ -128,11 +112,6 @@ export type Query = {
   getUser: GetUserOutputDto;
   getUsers: GetUsersOutputDto;
   getYoasobi: GetYoasobiOutputDto;
-};
-
-
-export type QueryGetUserArgs = {
-  input: GetUserInputDto;
 };
 
 
@@ -168,9 +147,7 @@ export type CreateUserMutationVariables = Exact<{
 
 export type CreateUserMutation = { __typename?: 'Mutation', createUser: { __typename?: 'CreateUserOutputDto', user: { __typename?: 'UserEntity', id: string, name: string, timezone: string, createdAt: string, updatedAt: string } } };
 
-export type GetExistingUserQueryVariables = Exact<{
-  input: GetUserInputDto;
-}>;
+export type GetExistingUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetExistingUserQuery = { __typename?: 'Query', getUser: { __typename?: 'GetUserOutputDto', user?: { __typename?: 'UserEntity', id: string, name: string, timezone: string, createdAt: string, updatedAt: string } | null } };
@@ -241,8 +218,8 @@ export type CreateUserMutationHookResult = ReturnType<typeof useCreateUserMutati
 export type CreateUserMutationResult = Apollo.MutationResult<CreateUserMutation>;
 export type CreateUserMutationOptions = Apollo.BaseMutationOptions<CreateUserMutation, CreateUserMutationVariables>;
 export const GetExistingUserDocument = gql`
-    query getExistingUser($input: GetUserInputDto!) {
-  getUser(input: $input) {
+    query getExistingUser {
+  getUser {
     user {
       id
       name
@@ -266,11 +243,10 @@ export const GetExistingUserDocument = gql`
  * @example
  * const { data, loading, error } = useGetExistingUserQuery({
  *   variables: {
- *      input: // value for 'input'
  *   },
  * });
  */
-export function useGetExistingUserQuery(baseOptions: Apollo.QueryHookOptions<GetExistingUserQuery, GetExistingUserQueryVariables> & ({ variables: GetExistingUserQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+export function useGetExistingUserQuery(baseOptions?: Apollo.QueryHookOptions<GetExistingUserQuery, GetExistingUserQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<GetExistingUserQuery, GetExistingUserQueryVariables>(GetExistingUserDocument, options);
       }

@@ -2,14 +2,25 @@ import { useCreateUserMutation, useGetExistingUserLazyQuery, UserEntity } from '
 import { supabaseAuth } from '@/libs/supabase.lib';
 import { Session, User } from '@supabase/supabase-js';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import { createContext, memo, ReactNode, useCallback, useContext, useRef, useState } from 'react';
-import { useDidMount, useWillUnmount } from 'rooks';
+import { createContext, memo, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 type ICreateNewUserInput = {
-  userId: string;
   name: string;
+  signal: AbortSignal;
 };
+
 type ICreateNewUser = (input: ICreateNewUserInput) => Promise<UserEntity>;
+
+type IGetAppUser = (input: { signal: AbortSignal }) => Promise<UserEntity | null>;
+
+type ILoadAppUser = (input: { signal: AbortSignal }) => Promise<UserEntity | null>;
+
+type ISyncAppUserInput = {
+  signal: AbortSignal;
+  loadUser: ILoadAppUser;
+};
+
+type ISyncAppUser = (input: ISyncAppUserInput) => Promise<void>;
 
 export type IAuthActionResponse =
   | {
@@ -36,11 +47,11 @@ export type IAuthContextProps = {
   authUser: User | null;
   userId: string | null;
   appUser: UserEntity | null;
-  isLoading: boolean;
   isReady: boolean;
+  hasAppUserError: boolean;
+  retryAppUser: () => void;
   signUpWithEmail: (input: ISignUpWithEmailInput) => Promise<IAuthActionResponse>;
   signInWithEmail: (input: ISignInWithEmailInput) => Promise<IAuthActionResponse>;
-  signInWithGoogle: () => Promise<IAuthActionResponse>;
   signInWithApple: () => Promise<IAuthActionResponse>;
   signOut: () => Promise<void>;
 };
@@ -54,83 +65,118 @@ export const AuthContext = createContext<IAuthContextProps | null>(null);
 export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [appUser, setAppUser] = useState<UserEntity | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isReady, setIsReady] = useState(false);
+  const [isReady, setIsReady] = useState<boolean>(false);
+  const [hasAppUserError, setHasAppUserError] = useState<boolean>(false);
 
-  const subscriptionRef = useRef<{ unsubscribe: () => void } | null>(null);
-  const isMountedRef = useRef<boolean>(true);
-  const isSigningUpRef = useRef<boolean>(false);
+  const appUserRequestControllerRef = useRef<AbortController | null>(null);
+  const retryAppUserRequestRef = useRef<ILoadAppUser | null>(null);
 
-  const [getExistingUserQuery] = useGetExistingUserLazyQuery();
   const [createUserMutation] = useCreateUserMutation();
+  const [getExistingUserQuery] = useGetExistingUserLazyQuery();
 
   const userId = session?.user.id || null;
   const authUser = session?.user || null;
 
-  const syncAppUser = useCallback(
-    async (userId: string): Promise<UserEntity> => {
-      const { data, error } = await getExistingUserQuery({
-        variables: {
-          input: {
-            userId,
-          },
-        },
-      });
-      if (error || !data) {
-        throw new Error('Failed to fetch user');
-      }
-      const user = data.getUser.user;
-      if (!user) {
-        throw new Error('User not found');
-      }
-      setAppUser(user);
-      return user;
-    },
-    [getExistingUserQuery],
-  );
-
-  const clearAuthState = useCallback(() => {
-    setSession(null);
-    setAppUser(null);
-  }, []);
-
   const createNewUser = useCallback<ICreateNewUser>(
-    async ({ userId, name }) => {
-      const { data: existingData, error } = await getExistingUserQuery({
-        variables: {
-          input: { userId },
-        },
-        fetchPolicy: 'network-only',
-      });
-      if (error) {
-        throw new Error('Failed to check existing user');
-      }
-      if (existingData?.getUser.user) {
-        return existingData.getUser.user;
-      }
+    async ({ name, signal }) => {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const { data: createData, errors } = await createUserMutation({
+        context: { fetchOptions: { signal } },
         variables: {
           input: {
-            userId,
             name,
             timezone,
           },
         },
       });
+      if (signal.aborted) {
+        throw new Error('App user request cancelled');
+      }
       if (errors || !createData) {
         throw new Error('Failed to create user');
       }
       return createData.createUser.user;
     },
-    [getExistingUserQuery, createUserMutation],
+    [createUserMutation],
   );
+
+  const getAppUser = useCallback<IGetAppUser>(
+    async ({ signal }) => {
+      const { data, error } = await getExistingUserQuery({
+        fetchPolicy: 'network-only',
+        context: { fetchOptions: { signal } },
+      });
+
+      if (signal.aborted || error || !data) {
+        throw new Error('Failed to get user');
+      }
+      return data.getUser.user || null;
+    },
+    [getExistingUserQuery],
+  );
+
+  const readyAppUserRequest = useCallback(() => {
+    appUserRequestControllerRef.current?.abort();
+    const controller = new AbortController();
+    appUserRequestControllerRef.current = controller;
+    retryAppUserRequestRef.current = null;
+    setAppUser(null);
+    setIsReady(false);
+    setHasAppUserError(false);
+    return controller;
+  }, []);
+
+  const syncAppUser = useCallback<ISyncAppUser>(
+    async ({ signal, loadUser }) => {
+      if (signal.aborted) {
+        return;
+      }
+      retryAppUserRequestRef.current = loadUser;
+      try {
+        const user = await loadUser({ signal });
+        if (signal.aborted) {
+          return;
+        }
+        if (user) {
+          setAppUser(user);
+        }
+        if (!user) {
+          const { data: authData, error: authError } = await supabaseAuth.getUser();
+          if (signal.aborted || authError || !authData.user) {
+            throw new Error('Failed to get authenticated user');
+          }
+          const nickname = authData.user.user_metadata.nickname;
+
+          const name = (typeof nickname === 'string' && nickname.trim()) || authData.user.email?.trim() || 'User';
+          const createdUser = await createNewUser({ name, signal });
+          if (signal.aborted) {
+            return;
+          }
+          setAppUser(createdUser);
+        }
+        setIsReady(true);
+        retryAppUserRequestRef.current = null;
+      } catch {
+        if (!signal.aborted) {
+          setHasAppUserError(true);
+        }
+      }
+    },
+    [createNewUser],
+  );
+
+  const retryAppUser = useCallback(() => {
+    const loadUser = retryAppUserRequestRef.current;
+    if (loadUser) {
+      const controller = readyAppUserRequest();
+      syncAppUser({ signal: controller.signal, loadUser });
+    }
+  }, [readyAppUserRequest, syncAppUser]);
 
   const signUpWithEmail = useCallback(
     async (input: ISignUpWithEmailInput): Promise<IAuthActionResponse> => {
+      const controller = readyAppUserRequest();
       try {
-        setIsLoading(true);
-        isSigningUpRef.current = true;
         const { data, error } = await supabaseAuth.signUp({
           email: input.email,
           password: input.password,
@@ -140,96 +186,55 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
             },
           },
         });
-        if (error || !data.user || !data.session) {
-          return {
-            ok: false,
-            message: '회원가입에 실패했습니다. 다시 시도해주세요.',
-          };
+        if (controller.signal.aborted || error || !data.user || !data.session) {
+          throw new Error('Sign up failed');
         }
-        const user = await createNewUser({ userId: data.user.id, name: input.name });
-        setAppUser(user);
+        const name = input.name;
+        await syncAppUser({
+          signal: controller.signal,
+          loadUser: ({ signal }) => createNewUser({ name, signal }),
+        });
         return {
           ok: true,
         };
-      } catch (error) {
-        await supabaseAuth.signOut();
+      } catch {
         return {
           ok: false,
           message: '회원가입에 실패했습니다. 다시 시도해주세요.',
         };
-      } finally {
-        isSigningUpRef.current = false;
-        setIsLoading(false);
       }
     },
-    [createNewUser],
+    [readyAppUserRequest, syncAppUser, createNewUser],
   );
 
-  const signInWithEmail = useCallback(async (input: ISignInWithEmailInput): Promise<IAuthActionResponse> => {
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabaseAuth.signInWithPassword({
-        email: input.email,
-        password: input.password,
-      });
-      if (error || !data.user || !data.session) {
+  const signInWithEmail = useCallback(
+    async (input: ISignInWithEmailInput): Promise<IAuthActionResponse> => {
+      const controller = readyAppUserRequest();
+      try {
+        const { data, error } = await supabaseAuth.signInWithPassword({
+          email: input.email,
+          password: input.password,
+        });
+        if (controller.signal.aborted || error || !data.user || !data.session) {
+          throw new Error('Sign in failed');
+        }
+        await syncAppUser({ signal: controller.signal, loadUser: getAppUser });
+        return {
+          ok: true,
+        };
+      } catch {
         return {
           ok: false,
           message: '로그인에 실패했습니다. 다시 시도해주세요.',
         };
       }
-      return {
-        ok: true,
-      };
-    } catch (error) {
-      return {
-        ok: false,
-        message: '로그인에 실패했습니다. 다시 시도해주세요.',
-      };
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const signInWithGoogle = useCallback(async (): Promise<IAuthActionResponse> => {
-    try {
-      setIsLoading(true);
-      const { error } = await supabaseAuth.signInWithOAuth({
-        provider: 'google',
-      });
-      if (error) {
-        return {
-          ok: false,
-          message: '구글 로그인에 실패했습니다. 다시 시도해주세요.',
-        };
-      }
-      const { data: userData } = await supabaseAuth.getUser();
-      if (!userData.user) {
-        return {
-          ok: false,
-          message: '구글 로그인에 실패했습니다. 다시 시도해주세요.',
-        };
-      }
-
-      const userName = userData.user.user_metadata['name'] || userData.user.email?.split('@')[0] || 'Google User';
-      const user = await createNewUser({ userId: userData.user.id, name: userName });
-      setAppUser(user);
-      return {
-        ok: true,
-      };
-    } catch (error) {
-      return {
-        ok: false,
-        message: '구글 로그인에 실패했습니다. 다시 시도해주세요.',
-      };
-    } finally {
-      setIsLoading(false);
-    }
-  }, [createNewUser]);
+    },
+    [readyAppUserRequest, syncAppUser, getAppUser],
+  );
 
   const signInWithApple = useCallback(async (): Promise<IAuthActionResponse> => {
+    const controller = readyAppUserRequest();
     try {
-      setIsLoading(true);
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
           AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
@@ -244,18 +249,6 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
         };
       }
 
-      const { data, error } = await supabaseAuth.signInWithIdToken({
-        provider: 'apple',
-        token: credential.identityToken,
-      });
-
-      if (error || !data.user || !data.session) {
-        return {
-          ok: false,
-          message: '애플 로그인에 실패했습니다. 다시 시도해주세요.',
-        };
-      }
-
       const appleFullName = [
         credential.fullName?.familyName,
         credential.fullName?.givenName,
@@ -264,102 +257,100 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
         .filter(Boolean)
         .join(' ');
 
-      const name = appleFullName || data.user.user_metadata['nickname'] || 'Apple User';
+      const { data, error } = await supabaseAuth.signInWithIdToken({
+        provider: 'apple',
+        token: credential.identityToken,
+      });
 
-      const user = await createNewUser({ userId: data.user.id, name });
-      setAppUser(user);
+      if (controller.signal.aborted || error || !data.user || !data.session) {
+        throw new Error('Apple sign in failed');
+      }
+      const name =
+        appleFullName ||
+        data.user.user_metadata.nickname ||
+        data.user.user_metadata.name ||
+        data.user.email?.split('@')[0] ||
+        'User';
+      await syncAppUser({
+        signal: controller.signal,
+        loadUser: async ({ signal }) => {
+          const { data, error } = await getExistingUserQuery({
+            fetchPolicy: 'network-only',
+            context: { fetchOptions: { signal } },
+          });
+          if (signal.aborted || error || !data) {
+            throw new Error('Failed to get user');
+          }
+          return data.getUser.user || createNewUser({ name, signal });
+        },
+      });
+
       return {
         ok: true,
       };
-    } catch (error) {
+    } catch {
       return {
         ok: false,
         message: '애플 로그인에 실패했습니다. 다시 시도해주세요.',
       };
-    } finally {
-      setIsLoading(false);
     }
-  }, [createNewUser]);
+  }, [readyAppUserRequest, syncAppUser, getExistingUserQuery, createNewUser]);
 
   const signOut = useCallback(async () => {
     try {
-      setIsLoading(true);
-      await supabaseAuth.signOut();
-      clearAuthState();
+      const { error } = await supabaseAuth.signOut();
+      if (error) {
+        throw error;
+      }
     } catch (error) {
       console.error('로그아웃 실패:', error);
-    } finally {
-      setIsLoading(false);
     }
-  }, [clearAuthState]);
+  }, []);
 
-  const bootstrapAuth = useCallback(async () => {
-    try {
-      const { data, error } = await supabaseAuth.getSession();
-      if (!isMountedRef.current) {
-        return;
-      }
-      if (error) {
-        clearAuthState();
-        setIsReady(true);
-        return;
-      }
-
-      if (data.session) {
-        setSession(data.session);
-        await syncAppUser(data.session.user.id);
-      }
-      setIsReady(true);
-    } catch (error) {
-      if (!isMountedRef.current) {
-        return;
-      }
-      clearAuthState();
-      setIsReady(true);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [clearAuthState, syncAppUser]);
-
-  useDidMount(async () => {
-    isMountedRef.current = true;
+  useEffect(() => {
     const {
       data: { subscription },
-    } = supabaseAuth.onAuthStateChange(async (event, session) => {
-      if (!isMountedRef.current) {
-        return;
-      }
-      if (event === 'INITIAL_SESSION') {
-        return;
-      }
-      if (event === 'SIGNED_OUT') {
-        clearAuthState();
-        return;
-      }
-      if (isSigningUpRef.current) {
-        setSession(session);
-        return;
-      }
-      setSession(session);
-      try {
-        if (session) {
-          await syncAppUser(session.user.id);
-        }
-      } catch (error) {
-        if (!isMountedRef.current) {
+    } = supabaseAuth.onAuthStateChange((event, authSession) => {
+      switch (event) {
+        case 'INITIAL_SESSION': {
+          if (appUserRequestControllerRef.current) {
+            return;
+          }
+          if (!authSession) {
+            setIsReady(true);
+            return;
+          }
+          setSession(authSession);
+          const controller = readyAppUserRequest();
+          syncAppUser({ signal: controller.signal, loadUser: getAppUser });
           return;
         }
-        clearAuthState();
+        case 'SIGNED_OUT':
+          appUserRequestControllerRef.current?.abort();
+          appUserRequestControllerRef.current = null;
+          retryAppUserRequestRef.current = null;
+          setSession(null);
+          setAppUser(null);
+          setHasAppUserError(false);
+          setIsReady(true);
+          return;
+        case 'SIGNED_IN':
+          setSession(authSession);
+          return;
+        case 'TOKEN_REFRESHED':
+        case 'USER_UPDATED':
+        case 'PASSWORD_RECOVERY':
+          setSession(authSession);
+          return;
       }
     });
-    subscriptionRef.current = subscription;
-    await bootstrapAuth();
-  });
-
-  useWillUnmount(() => {
-    isMountedRef.current = false;
-    subscriptionRef.current?.unsubscribe();
-  });
+    return () => {
+      subscription.unsubscribe();
+      appUserRequestControllerRef.current?.abort();
+      appUserRequestControllerRef.current = null;
+      retryAppUserRequestRef.current = null;
+    };
+  }, [getAppUser, readyAppUserRequest, syncAppUser]);
 
   return (
     <AuthContext.Provider
@@ -368,11 +359,11 @@ export const AuthProvider = memo<IAuthProviderProps>(({ children }) => {
         authUser,
         userId,
         appUser,
-        isLoading,
         isReady,
+        hasAppUserError,
+        retryAppUser,
         signUpWithEmail,
         signInWithEmail,
-        signInWithGoogle,
         signInWithApple,
         signOut,
       }}>

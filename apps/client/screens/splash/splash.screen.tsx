@@ -1,15 +1,15 @@
-import { DefaultLayout } from '@/components';
+import { Alert, DefaultLayout } from '@/components';
 import { useAuth } from '@/providers';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { memo, useCallback, useState } from 'react';
 import { useDidUpdate } from 'rooks';
-import { Stack } from 'tamagui';
+import { Button, Stack, Text } from 'tamagui';
 import { LinearGradient } from 'tamagui/linear-gradient';
 
 export const SplashScreen = memo(() => {
   const route = useRouter();
-  const { session, isReady } = useAuth();
+  const { session, isReady, hasAppUserError, retryAppUser } = useAuth();
   const [isBackgroundLoaded, setIsBackgroundLoaded] = useState<boolean>(false);
 
   const handleLoadBackground = useCallback(() => {
@@ -24,7 +24,7 @@ export const SplashScreen = memo(() => {
       if (session) {
         route.replace('/(tabs)/home');
       } else {
-        route.replace('/greeting/greeting');
+        route.replace('/greeting');
       }
     }, 3000);
 
@@ -35,6 +35,23 @@ export const SplashScreen = memo(() => {
 
   return (
     <DefaultLayout isBlur onBackgroundLoad={handleLoadBackground}>
+      {hasAppUserError && (
+        <Alert
+          isOpen={hasAppUserError}
+          onClose={retryAppUser}
+          isErrorAlert
+          alertPadding="$size.x4"
+          contentBorderRadius={12}>
+          <Stack gap="$size.x3">
+            <Text color="$colors.moonSoftWhite">프로필을 불러오지 못했어요. 다시 시도해 주세요.</Text>
+            <Button height="$size.x10" onPress={retryAppUser}>
+              <Text fontWeight="$700" color="$colors.lampYellow">
+                재시도
+              </Text>
+            </Button>
+          </Stack>
+        </Alert>
+      )}
       <Stack flex={1} justify="center" items="center" gap="$size.x2">
         <Stack
           width="auto"

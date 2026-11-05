@@ -9,7 +9,7 @@ export class GetYoasobiService {
   async execute({
     userId,
     weekStartDate,
-  }: GetYoasobiInputDto): Promise<GetYoasobiOutputDto> {
+  }: GetYoasobiInputDto & { userId: string }): Promise<GetYoasobiOutputDto> {
     const yoasobi = await this.prismaService.yoasobi.findUnique({
       where: {
         userId_weekStartDate: {

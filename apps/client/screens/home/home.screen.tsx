@@ -621,7 +621,6 @@ export const HomeScreen = memo(() => {
       const { data, error } = await getWeeklyYoasobiQuery({
         variables: {
           input: {
-            userId,
             weekStartDate: weekStartDateIso,
           },
         },
@@ -666,7 +665,6 @@ export const HomeScreen = memo(() => {
       const { data, errors } = await createYoasobiMutation({
         variables: {
           input: {
-            userId,
             dayOfWeek: selectedDayOfWeek,
             yoasobiDate: newYoasobiDate.toISOString(),
             alarmTime: newYoasobiDate.toISOString(),

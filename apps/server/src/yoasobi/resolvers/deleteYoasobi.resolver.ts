@@ -1,3 +1,4 @@
+import { CurrentUser, ICurrentUser } from 'src/auth';
 import { Resolver, Mutation, Args } from '@nestjs/graphql';
 import { DeleteYoasobiInputDto, DeleteYoasobiOutputDto } from '../dto';
 import { DeleteYoasobiService } from '../services';
@@ -9,7 +10,11 @@ export class DeleteYoasobiResolver {
   @Mutation(() => DeleteYoasobiOutputDto)
   async deleteYoasobi(
     @Args('input') input: DeleteYoasobiInputDto,
+    @CurrentUser() user: ICurrentUser,
   ): Promise<DeleteYoasobiOutputDto> {
-    return await this.deleteYoasobiService.execute(input);
+    return await this.deleteYoasobiService.execute({
+      ...input,
+      userId: user.id,
+    });
   }
 }

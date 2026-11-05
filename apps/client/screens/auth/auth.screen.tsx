@@ -402,7 +402,7 @@ const SignUpBox = memo<ISignUpBoxProps>(
 
 export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
   const route = useRouter();
-  const { appUser, signUpWithEmail, signInWithEmail, signInWithApple } = useAuth();
+  const { appUser, hasAppUserError, retryAppUser, signUpWithEmail, signInWithEmail, signInWithApple } = useAuth();
   const [currentAuthType, setCurrentAuthType] = useState<IAuthType>(authType);
   const [loginFormData, setLoginFormData] = useState<ILoginFormType>({
     email: '',
@@ -567,6 +567,23 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
   const isPlatformAndroid = Platform.OS === 'android';
   return (
     <LinearGradientLayout screenEdge={['top']} hasHeader>
+      {hasAppUserError && (
+        <Alert
+          isOpen={hasAppUserError}
+          onClose={retryAppUser}
+          isErrorAlert
+          alertPadding="$size.x4"
+          contentBorderRadius={12}>
+          <Stack gap="$size.x3">
+            <Text color="$colors.moonSoftWhite">프로필을 불러오지 못했어요. 다시 시도해 주세요.</Text>
+            <Button height="$size.x10" onPress={retryAppUser}>
+              <Text fontWeight="$700" color="$colors.lampYellow">
+                재시도
+              </Text>
+            </Button>
+          </Stack>
+        </Alert>
+      )}
       {!!authError && (
         <Alert
           isOpen={!!authError}

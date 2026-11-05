@@ -16,7 +16,9 @@ export class CreateYoasobiService {
     dayOfWeek,
     alarmTime,
     duration,
-  }: CreateYoasobiInputDto): Promise<CreateYoasobiOutputDto> {
+  }: CreateYoasobiInputDto & {
+    userId: string;
+  }): Promise<CreateYoasobiOutputDto> {
     const { weekStartDate } =
       this.getWeekStartDateUtilService.execute(yoasobiDate);
     const yoasobi = await this.prismaService.yoasobi.create({
