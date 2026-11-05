@@ -51,7 +51,7 @@ export default function TabsLayout() {
   }
 
   if (!session) {
-    return <Redirect href={{ pathname: '/greeting/greeting' }} />;
+    return <Redirect href={{ pathname: '/greeting' }} />;
   }
 
   return (
