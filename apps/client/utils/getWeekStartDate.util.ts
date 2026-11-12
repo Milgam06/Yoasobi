@@ -1,8 +1,11 @@
-type IGetWeekStartDateUtil = ({ currentDate }: { currentDate: Date }) => { weekStartDate: Date };
+import { getWeekStartDateTimeUtil } from './dateTime.util';
 
-export const getWeekStartDateUtil: IGetWeekStartDateUtil = ({ currentDate }) => {
-  const weekStartDate = new Date(currentDate);
-  weekStartDate.setDate(weekStartDate.getDate() - weekStartDate.getDay());
-  weekStartDate.setHours(0, 0, 0, 0);
-  return { weekStartDate };
+type IGetWeekStartDateUtil = (input: { currentDate: Date; timeZone?: string }) => { weekStartDate: Date };
+
+export const getWeekStartDateUtil: IGetWeekStartDateUtil = ({ currentDate, timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone }) => {
+  const weekStartDate = getWeekStartDateTimeUtil({
+    utcDate: currentDate,
+    timeZone,
+  });
+  return { weekStartDate: weekStartDate };
 };

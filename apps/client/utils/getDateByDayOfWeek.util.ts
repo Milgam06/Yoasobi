@@ -1,23 +1,29 @@
 import { DayOfWeek } from '@/libs';
+import { Temporal } from '@js-temporal/polyfill';
 
 const DAY_OF_WEEK_INDEX_MAP: Record<DayOfWeek, number> = {
-  [DayOfWeek.Sunday]: 0,
-  [DayOfWeek.Monday]: 1,
-  [DayOfWeek.Tuesday]: 2,
-  [DayOfWeek.Wednesday]: 3,
-  [DayOfWeek.Thursday]: 4,
-  [DayOfWeek.Friday]: 5,
-  [DayOfWeek.Saturday]: 6,
+  SUNDAY: 0,
+  MONDAY: 1,
+  TUESDAY: 2,
+  WEDNESDAY: 3,
+  THURSDAY: 4,
+  FRIDAY: 5,
+  SATURDAY: 6,
 };
 
-type IGetDateByDayOfWeekUtil = ({ weekStartDate, dayOfWeek }: { weekStartDate: Date; dayOfWeek: DayOfWeek }) => {
+type IGetDateByDayOfWeekUtil = (input: { weekStartDate: Date; dayOfWeek: DayOfWeek; timeZone?: string }) => {
   dateByDayOfWeek: Date;
 };
 
-export const getDateByDayOfWeekUtil: IGetDateByDayOfWeekUtil = ({ weekStartDate, dayOfWeek }) => {
-  const dateByDayOfWeek = new Date(weekStartDate);
+export const getDateByDayOfWeekUtil: IGetDateByDayOfWeekUtil = ({
+  weekStartDate,
+  dayOfWeek,
+  timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
+}) => {
+  const localWeekStartDate = Temporal.Instant.fromEpochMilliseconds(weekStartDate.getTime()).toZonedDateTimeISO(
+    timeZone,
+  );
   const dayOffset = DAY_OF_WEEK_INDEX_MAP[dayOfWeek];
-  dateByDayOfWeek.setDate(dateByDayOfWeek.getDate() + dayOffset);
-  dateByDayOfWeek.setHours(0, 0, 0, 0);
-  return { dateByDayOfWeek };
+  const dateByDayOfWeek = localWeekStartDate.add({ days: dayOffset }).startOfDay();
+  return { dateByDayOfWeek: new Date(dateByDayOfWeek.epochMilliseconds) };
 };
