@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { createContext, memo, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import { getNextMidnightUtil, getUtcToLocalUtil, getWeekStartDateTimeUtil } from '@/utils';
@@ -5,13 +6,12 @@ import { useAuth } from '../auth';
 
 export type IDateTimeContextProps = {
   utcDate: Date;
-  // ISO wall-clock strings; interpret each using its corresponding time zone.
-  localDate: string | null;
+  userLocalDate: string | null;
   deviceLocalDate: string;
   weekStartDate: Date | null;
   userTimeZone: string | null;
   deviceTimeZone: string;
-  isReady: boolean;
+  isDateTimeReady: boolean;
   getNow: () => Date;
   refreshDateTime: () => void;
 };
@@ -20,16 +20,18 @@ type IDateTimeProviderProps = {
   children: ReactNode;
 };
 
-const getCurrentDateTime = () => ({
+const getCurrentDeviceDateTime = () => ({
   utcDate: new Date(),
-  deviceTimeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  deviceTimeZone: dayjs.tz.guess(),
 });
 
 export const DateTimeContext = createContext<IDateTimeContextProps | null>(null);
 
 export const DateTimeProvider = memo<IDateTimeProviderProps>(({ children }) => {
   const { appUser, isReady: isAuthReady } = useAuth();
-  const [{ utcDate, deviceTimeZone }, setDateTime] = useState(getCurrentDateTime);
+  const [{ utcDate, deviceTimeZone }, setDateTime] = useState<{ utcDate: Date; deviceTimeZone: string }>(
+    getCurrentDeviceDateTime,
+  );
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const userTimeZone = useMemo(() => {
@@ -44,25 +46,26 @@ export const DateTimeProvider = memo<IDateTimeProviderProps>(({ children }) => {
     }
   }, [appUser?.timezone, isAuthReady]);
 
-  const refreshDateTime = useCallback(
-    function refresh() {
+  const userLocalDate = userTimeZone ? getUtcToLocalUtil({ utcDate, timeZone: userTimeZone }) : null;
+  const weekStartDate = userTimeZone ? getWeekStartDateTimeUtil({ utcDate, timeZone: userTimeZone }) : null;
+
+  const refreshDateTime = useCallback(() => {
+    const refresh = () => {
       clearTimeout(timeoutRef.current);
-      const currentDateTime = getCurrentDateTime();
+      const currentDateTime = getCurrentDeviceDateTime();
       setDateTime(currentDateTime);
 
-      if (AppState.currentState && AppState.currentState !== 'active') {
+      if (!userTimeZone || (AppState.currentState && AppState.currentState !== 'active')) {
         return;
       }
-      const timeZones = userTimeZone
-        ? [userTimeZone, currentDateTime.deviceTimeZone]
-        : [currentDateTime.deviceTimeZone];
-      const nextMidnight = Math.min(
-        ...timeZones.map((timeZone) => getNextMidnightUtil({ utcDate: currentDateTime.utcDate, timeZone }).getTime()),
-      );
+      const nextMidnight = getNextMidnightUtil({
+        utcDate: currentDateTime.utcDate,
+        timeZone: userTimeZone,
+      }).getTime();
       timeoutRef.current = setTimeout(refresh, Math.max(1, nextMidnight - Date.now()));
-    },
-    [userTimeZone],
-  );
+    };
+    refresh();
+  }, [userTimeZone]);
 
   useEffect(() => {
     timeoutRef.current = setTimeout(refreshDateTime, 0);
@@ -79,24 +82,22 @@ export const DateTimeProvider = memo<IDateTimeProviderProps>(({ children }) => {
     };
   }, [refreshDateTime]);
 
-  const value = useMemo<IDateTimeContextProps>(() => {
-    const localDate = userTimeZone ? getUtcToLocalUtil({ utcDate, timeZone: userTimeZone }) : null;
-    const weekStartDate = userTimeZone ? getWeekStartDateTimeUtil({ utcDate, timeZone: userTimeZone }) : null;
-
-    return {
-      utcDate,
-      localDate,
-      deviceLocalDate: getUtcToLocalUtil({ utcDate, timeZone: deviceTimeZone }),
-      weekStartDate,
-      userTimeZone,
-      deviceTimeZone,
-      isReady: userTimeZone !== null,
-      getNow: () => new Date(),
-      refreshDateTime,
-    };
-  }, [utcDate, userTimeZone, deviceTimeZone, refreshDateTime]);
-
-  return <DateTimeContext.Provider value={value}>{children}</DateTimeContext.Provider>;
+  return (
+    <DateTimeContext.Provider
+      value={{
+        utcDate,
+        userLocalDate,
+        deviceLocalDate: getUtcToLocalUtil({ utcDate, timeZone: deviceTimeZone }),
+        weekStartDate,
+        userTimeZone,
+        deviceTimeZone,
+        isDateTimeReady: userTimeZone !== null,
+        getNow: () => new Date(),
+        refreshDateTime,
+      }}>
+      {children}
+    </DateTimeContext.Provider>
+  );
 });
 
 export const useDateTime = (): IDateTimeContextProps => {
