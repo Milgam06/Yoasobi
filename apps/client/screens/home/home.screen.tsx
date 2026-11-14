@@ -548,7 +548,6 @@ export const HomeScreen = memo(() => {
   const [
     getWeeklyYoasobiQuery,
     {
-      called: isWeeklyYoasobiCalled,
       loading: isWeeklyYoasobiLoading,
       error: weeklyYoasobiError,
       data: weeklyYoasobiData,
@@ -587,7 +586,6 @@ export const HomeScreen = memo(() => {
     !userId ||
     !weekStartDateString ||
     !isWeeklyQuerySettled ||
-    !isWeeklyYoasobiCalled ||
     isWeeklyYoasobiLoading
       ? 'loading'
       : weeklyYoasobiError || hasWeeklyYoasobiException || weeklyYoasobiData?.getYoasobi?.yoasobi === undefined
