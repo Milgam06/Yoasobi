@@ -55,13 +55,17 @@ export const DateTimeProvider = memo<IDateTimeProviderProps>(({ children }) => {
       const currentDateTime = getCurrentDeviceDateTime();
       setDateTime(currentDateTime);
 
-      if (!userTimeZone || (AppState.currentState && AppState.currentState !== 'active')) {
+      if (AppState.currentState && AppState.currentState !== 'active') {
         return;
       }
-      const nextMidnight = getNextMidnightUtil({
+      const deviceMidnight = getNextMidnightUtil({
         utcDate: currentDateTime.utcDate,
-        timeZone: userTimeZone,
+        timeZone: currentDateTime.deviceTimeZone,
       }).getTime();
+      const accountMidnight = userTimeZone
+        ? getNextMidnightUtil({ utcDate: currentDateTime.utcDate, timeZone: userTimeZone }).getTime()
+        : deviceMidnight;
+      const nextMidnight = Math.min(deviceMidnight, accountMidnight);
       timeoutRef.current = setTimeout(refresh, Math.max(1, nextMidnight - Date.now()));
     };
     refresh();
