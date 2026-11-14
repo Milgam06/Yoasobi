@@ -12,7 +12,6 @@ export type IDateTimeContextProps = {
   userTimeZone: string | null;
   deviceTimeZone: string;
   isDateTimeReady: boolean;
-  getNow: () => Date;
   refreshDateTime: () => void;
 };
 
@@ -96,7 +95,6 @@ export const DateTimeProvider = memo<IDateTimeProviderProps>(({ children }) => {
         userTimeZone,
         deviceTimeZone,
         isDateTimeReady: userTimeZone !== null,
-        getNow: () => new Date(),
         refreshDateTime,
       }}>
       {children}
