@@ -6,7 +6,7 @@ import timezone from 'dayjs/plugin/timezone';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-type IZonedDateTimeInput = {
+type IGetWeekStartDateInput = {
   utcDate: Date;
   timeZone: string;
 };
@@ -34,8 +34,6 @@ type IGetDateByDayOfWeekInput = {
   timeZone?: string;
 };
 
-type IGetWeekStartDateInput = { currentDate: Date; timeZone?: string };
-
 export const getDateByDayOfWeekUtil = ({
   weekStartDate,
   dayOfWeek,
@@ -45,18 +43,7 @@ export const getDateByDayOfWeekUtil = ({
   return { dateByDayOfWeek: dayjs.tz(date, timeZone).toDate() };
 };
 
-export const getWeekStartDateUtil = ({
-  currentDate,
-  timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
-}: IGetWeekStartDateInput): { weekStartDate: Date } => {
-  const weekStartDate = getWeekStartDateTimeUtil({
-    utcDate: currentDate,
-    timeZone,
-  });
-  return { weekStartDate };
-};
-
-export const getUtcToLocalUtil = ({ utcDate, timeZone }: IZonedDateTimeInput): string => {
+export const getUtcToLocalUtil = ({ utcDate, timeZone }: IGetWeekStartDateInput): string => {
   const localDate = dayjs(utcDate).tz(timeZone).format(LOCAL_FORMAT);
   return localDate;
 };
@@ -76,13 +63,13 @@ export const getLocalToUtcUtil = ({ localDate, timeZone }: IGetLocalToUtcInput):
   return convertedDate;
 };
 
-export const getWeekStartDateTimeUtil = ({ utcDate, timeZone }: IZonedDateTimeInput): Date => {
+export const getWeekStartDateTimeUtil = ({ utcDate, timeZone }: IGetWeekStartDateInput): Date => {
   const localDate = dayjs(utcDate).tz(timeZone);
   const sunday = localDate.subtract(localDate.day(), 'day').format('YYYY-MM-DD');
   return dayjs.tz(sunday, timeZone).toDate();
 };
 
-export const getNextMidnightUtil = ({ utcDate, timeZone }: IZonedDateTimeInput): Date => {
+export const getNextMidnightUtil = ({ utcDate, timeZone }: IGetWeekStartDateInput): Date => {
   const tomorrow = dayjs(utcDate).tz(timeZone).add(1, 'day').format('YYYY-MM-DD');
   return dayjs.tz(tomorrow, timeZone).toDate();
 };
