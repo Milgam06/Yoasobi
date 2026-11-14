@@ -9,7 +9,6 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "test:dateTime": "tsx --test utils/dateTime.util.test.ts",
     "codegen": "graphql-codegen"
   },
   "dependencies": {
