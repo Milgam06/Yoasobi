@@ -193,7 +193,7 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
               <Stack flexDirection="row" items="center" gap="$size.x2">
                 <FontAwesomeIcon size={24} icon={faClock} color="#FDE8D6" />
                 <Text fontSize="$7" fontWeight="$800" color="$colors.moonSoftWhite">
-                  시작 시간 ({userTimeZone})
+                  시작 시간
                 </Text>
               </Stack>
               <Text fontSize="$8" fontWeight="$700" color="$colors.moonSoftWhite">
@@ -547,11 +547,7 @@ export const HomeScreen = memo(() => {
 
   const [
     getWeeklyYoasobiQuery,
-    {
-      loading: isWeeklyYoasobiLoading,
-      error: weeklyYoasobiError,
-      data: weeklyYoasobiData,
-    },
+    { loading: isWeeklyYoasobiLoading, error: weeklyYoasobiError, data: weeklyYoasobiData },
   ] = useGetWeeklyYoasobiLazyQuery({
     fetchPolicy: 'network-only',
     errorPolicy: 'none',
@@ -582,11 +578,7 @@ export const HomeScreen = memo(() => {
   }, [deviceLocalDate, deviceTimeZone, selectedDayOfWeek, startTime]);
 
   const weeklyQueryStatus =
-    !isReady ||
-    !userId ||
-    !weekStartDateString ||
-    !isWeeklyQuerySettled ||
-    isWeeklyYoasobiLoading
+    !isReady || !userId || !weekStartDateString || !isWeeklyQuerySettled || isWeeklyYoasobiLoading
       ? 'loading'
       : weeklyYoasobiError || hasWeeklyYoasobiException || weeklyYoasobiData?.getYoasobi?.yoasobi === undefined
         ? 'error'
@@ -807,8 +799,23 @@ export const HomeScreen = memo(() => {
           <Text color="$colors.cloudGray" style={{ textAlign: 'center' }}>
             이번 주 기록을 확인하지 못했어요.
           </Text>
-          <Button disabled={isCreatingYoasobi} onPress={() => setHomeScreenAlert('fetchingIssue')}>
-            다시 시도
+          <Button
+            height="auto"
+            bg="$colors.moonSoftWhite"
+            py="$size.x3"
+            borderTopLeftRadius="$size.x5"
+            borderTopRightRadius="$size.x5"
+            borderBottomLeftRadius="$size.x5"
+            borderBottomRightRadius="$size.x5"
+            pressStyle={{
+              bg: '$colors.moonSoftWhite',
+              opacity: 0.8,
+            }}
+            disabled={isCreatingYoasobi}
+            onPress={() => setHomeScreenAlert('fetchingIssue')}>
+            <Text fontSize="$8" fontWeight="$800" color="$colors.midnightPurple">
+              다시 시도
+            </Text>
           </Button>
         </Stack>
       )}
