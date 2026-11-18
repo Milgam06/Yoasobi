@@ -563,11 +563,9 @@ export const HomeScreen = memo(() => {
       const selectedUTCDate =
         selectedDate.getUTCDate() - selectedDate.getUTCDay() + DAY_OF_WEEK_ARRAY.indexOf(selectedDayOfWeek);
       selectedDate.setUTCDate(selectedUTCDate);
-      const date = selectedDate.toISOString().slice(0, 10);
-      const hours = String(startTime.getHours()).padStart(2, '0');
-      const minutes = String(startTime.getMinutes()).padStart(2, '0');
+      selectedDate.setUTCHours(startTime.getHours(), startTime.getMinutes(), 0, 0);
       const newYoasobiUTCDate = getLocalToUtcUtil({
-        localDate: `${date}T${hours}:${minutes}`,
+        localDate: selectedDate,
         timeZone: deviceTimeZone,
       }).toISOString();
       return newYoasobiUTCDate;

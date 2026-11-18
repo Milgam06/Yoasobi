@@ -12,7 +12,7 @@ type IUtcUtilInput = {
 };
 
 type ILocalUtilInput = {
-  localDate: string;
+  localDate: Date;
   timeZone: string;
 };
 
@@ -62,19 +62,13 @@ export const getDateByDayOfWeekUtil = ({ weekStartUtcDate, dayOfWeek, timeZone }
   return dateByDayOfWeek;
 };
 
-// 이거 input localDate string 타입인거 꼬롬함;;
 export const getLocalToUtcUtil = ({ localDate, timeZone }: ILocalUtilInput): Date => {
-  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?$/.test(localDate)) {
-    throw new RangeError('Expected an ISO local date-time without an offset');
-  }
-  const wallClock = dayjs.utc(localDate);
-  const normalized = wallClock.format(LOCAL_FORMAT);
-  const [dateTime, fraction = ''] = localDate.split('.');
-  const expected = `${dateTime.length === 16 ? dateTime + ':00' : dateTime}.${fraction.padEnd(3, '0')}`;
-  if (!wallClock.isValid() || normalized !== expected) {
+  const year = localDate.getUTCFullYear();
+  if (Number.isNaN(year) || year < 100 || year > 9999) {
     throw new RangeError('Invalid local date-time');
   }
-  const convertedDate = dayjs.tz(localDate, timeZone).toDate();
+  const localDateTime = dayjs.utc(localDate).format(LOCAL_FORMAT);
+  const convertedDate = dayjs.tz(localDateTime, timeZone).toDate();
   return convertedDate;
 };
 
