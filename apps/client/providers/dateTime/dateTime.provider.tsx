@@ -6,8 +6,8 @@ import { useAuth } from '../auth';
 
 export type IDateTimeContextProps = {
   utcDate: Date;
-  userLocalDate: string | null;
-  deviceLocalDate: string;
+  userLocalDate: Date | null;
+  deviceLocalDate: Date;
   weekStartDate: Date | null;
   userTimeZone: string | null;
   deviceTimeZone: string;

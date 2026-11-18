@@ -421,10 +421,10 @@ const YoasobiWeekCompleteBox = memo(() => (
 const YoasobiResultBox = memo<IYoasobiResultBoxProps>(({ yoasobiDate, createdDate }) => {
   const { deviceLocalDate, deviceTimeZone } = useDateTime();
   const deviceLocalYoasobiDateTime = getUtcToLocalUtil({ utcDate: yoasobiDate, timeZone: deviceTimeZone });
-  const yoasobiTimeText = deviceLocalYoasobiDateTime.slice(11, 16);
+  const yoasobiTimeText = deviceLocalYoasobiDateTime.toISOString().slice(11, 16);
 
-  const today = new Date(deviceLocalDate.slice(0, 10));
-  const deviceLocalYoasobiDay = new Date(deviceLocalYoasobiDateTime.slice(0, 10));
+  const today = new Date(deviceLocalDate.toISOString().slice(0, 10));
+  const deviceLocalYoasobiDay = new Date(deviceLocalYoasobiDateTime.toISOString().slice(0, 10));
   const yoasobiDay = DAY_OF_WEEK_ARRAY[deviceLocalYoasobiDay.getUTCDay()];
   const remainingDays = Math.max(0, (deviceLocalYoasobiDay.getTime() - today.getTime()) / MS_PER_DAY);
   const isDday = remainingDays <= 0;
@@ -523,8 +523,7 @@ export const HomeScreen = memo(() => {
 
   const weekStartDateString = isDateTimeReady ? weekStartDate?.toISOString() : undefined;
   const selectableDaysOfWeek = useMemo(() => {
-    const today = new Date(deviceLocalDate.slice(0, 10));
-    return DAY_OF_WEEK_ARRAY.slice(today.getUTCDay() + 1);
+    return DAY_OF_WEEK_ARRAY.slice(deviceLocalDate.getUTCDay() + 1);
   }, [deviceLocalDate]);
   const initialSelectedDayOfWeek = selectableDaysOfWeek[0] ?? null;
 
@@ -560,7 +559,7 @@ export const HomeScreen = memo(() => {
       return null;
     }
     try {
-      const selectedDate = new Date(deviceLocalDate.slice(0, 10));
+      const selectedDate = new Date(deviceLocalDate.getTime());
       const selectedUTCDate =
         selectedDate.getUTCDate() - selectedDate.getUTCDay() + DAY_OF_WEEK_ARRAY.indexOf(selectedDayOfWeek);
       selectedDate.setUTCDate(selectedUTCDate);

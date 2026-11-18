@@ -6,12 +6,12 @@ import timezone from 'dayjs/plugin/timezone';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-type IGetWeekStartDateInput = {
+type IUtcUtilInput = {
   utcDate: Date;
   timeZone: string;
 };
 
-type IGetLocalToUtcInput = {
+type ILocalUtilInput = {
   localDate: string;
   timeZone: string;
 };
@@ -29,26 +29,41 @@ const DAY_OF_WEEK_INDEX_MAP: Record<DayOfWeek, number> = {
 };
 
 type IGetDateByDayOfWeekInput = {
-  weekStartDate: Date;
+  weekStartUtcDate: Date;
   dayOfWeek: DayOfWeek;
-  timeZone?: string;
+  timeZone: string;
 };
 
-export const getDateByDayOfWeekUtil = ({
-  weekStartDate,
-  dayOfWeek,
-  timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
-}: IGetDateByDayOfWeekInput): { dateByDayOfWeek: Date } => {
-  const date = dayjs(weekStartDate).tz(timeZone).add(DAY_OF_WEEK_INDEX_MAP[dayOfWeek], 'day').format('YYYY-MM-DD');
-  return { dateByDayOfWeek: dayjs.tz(date, timeZone).toDate() };
-};
-
-export const getUtcToLocalUtil = ({ utcDate, timeZone }: IGetWeekStartDateInput): string => {
-  const localDate = dayjs(utcDate).tz(timeZone).format(LOCAL_FORMAT);
+export const getUtcToLocalUtil = ({ utcDate, timeZone }: IUtcUtilInput): Date => {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    calendar: 'gregory',
+    numberingSystem: 'latn',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(utcDate);
+  const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+  const milliseconds = String(utcDate.getUTCMilliseconds()).padStart(3, '0');
+  const localDate = new Date(
+    `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}:${values.second}.${milliseconds}Z`,
+  );
   return localDate;
 };
 
-export const getLocalToUtcUtil = ({ localDate, timeZone }: IGetLocalToUtcInput): Date => {
+export const getDateByDayOfWeekUtil = ({ weekStartUtcDate, dayOfWeek, timeZone }: IGetDateByDayOfWeekInput): Date => {
+  const localWeekStartDate = getUtcToLocalUtil({ utcDate: weekStartUtcDate, timeZone });
+  const date = dayjs.utc(localWeekStartDate).add(DAY_OF_WEEK_INDEX_MAP[dayOfWeek], 'day').format('YYYY-MM-DD');
+  const dateByDayOfWeek = dayjs.tz(date, timeZone).toDate();
+  return dateByDayOfWeek;
+};
+
+// 이거 input localDate string 타입인거 꼬롬함;;
+export const getLocalToUtcUtil = ({ localDate, timeZone }: ILocalUtilInput): Date => {
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?$/.test(localDate)) {
     throw new RangeError('Expected an ISO local date-time without an offset');
   }
@@ -63,15 +78,18 @@ export const getLocalToUtcUtil = ({ localDate, timeZone }: IGetLocalToUtcInput):
   return convertedDate;
 };
 
-export const getWeekStartDateTimeUtil = ({ utcDate, timeZone }: IGetWeekStartDateInput): Date => {
-  const localDate = dayjs(utcDate).tz(timeZone);
-  const sunday = localDate.subtract(localDate.day(), 'day').format('YYYY-MM-DD');
-  return dayjs.tz(sunday, timeZone).toDate();
+export const getWeekStartDateTimeUtil = ({ utcDate, timeZone }: IUtcUtilInput): Date => {
+  const localDate = getUtcToLocalUtil({ utcDate, timeZone });
+  const sunday = dayjs.utc(localDate).subtract(localDate.getUTCDay(), 'day').format('YYYY-MM-DD');
+  const weekStartDate = dayjs.tz(sunday, timeZone).toDate();
+  return weekStartDate;
 };
 
-export const getNextMidnightUtil = ({ utcDate, timeZone }: IGetWeekStartDateInput): Date => {
-  const tomorrow = dayjs(utcDate).tz(timeZone).add(1, 'day').format('YYYY-MM-DD');
-  return dayjs.tz(tomorrow, timeZone).toDate();
+export const getNextMidnightUtil = ({ utcDate, timeZone }: IUtcUtilInput): Date => {
+  const localDate = getUtcToLocalUtil({ utcDate, timeZone });
+  const tomorrow = dayjs.utc(localDate).add(1, 'day').format('YYYY-MM-DD');
+  const nextMidnight = dayjs.tz(tomorrow, timeZone).toDate();
+  return nextMidnight;
 };
 
 export const parseDateTime = (dateTime: string): Date => {
