@@ -519,12 +519,15 @@ export const HomeScreen = memo(() => {
   const navbarHeight = useBottomTabBarHeight();
 
   const { userId, isReady } = useAuth();
-  const { isDateTimeReady, deviceLocalDate, deviceTimeZone, weekStartDate, utcDate } = useDateTime();
+  const { isDateTimeReady, userLocalDate, userTimeZone, weekStartDate, utcDate } = useDateTime();
 
   const weekStartDateString = isDateTimeReady ? weekStartDate?.toISOString() : undefined;
   const selectableDaysOfWeek = useMemo(() => {
-    return DAY_OF_WEEK_ARRAY.slice(deviceLocalDate.getUTCDay() + 1);
-  }, [deviceLocalDate]);
+    if (!userLocalDate) {
+      return [];
+    }
+    return DAY_OF_WEEK_ARRAY.slice(userLocalDate.getUTCDay() + 1);
+  }, [userLocalDate]);
   const initialSelectedDayOfWeek = selectableDaysOfWeek[0] ?? null;
 
   const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<DayOfWeek | null>(initialSelectedDayOfWeek);
@@ -555,24 +558,29 @@ export const HomeScreen = memo(() => {
   const [createYoasobiMutation, { loading: isCreatingYoasobi }] = useCreateYoasobiMutation({ errorPolicy: 'none' });
 
   const newYoasobiDate = useMemo(() => {
-    if (!selectedDayOfWeek) {
+    if (!weekStartDate || !userTimeZone || !selectedDayOfWeek) {
       return null;
     }
     try {
-      const selectedDate = new Date(deviceLocalDate.getTime());
-      const selectedUTCDate =
-        selectedDate.getUTCDate() - selectedDate.getUTCDay() + DAY_OF_WEEK_ARRAY.indexOf(selectedDayOfWeek);
-      selectedDate.setUTCDate(selectedUTCDate);
-      selectedDate.setUTCHours(startTime.getHours(), startTime.getMinutes(), 0, 0);
+      const localWeekStartDate = getUtcToLocalUtil({ utcDate: weekStartDate, timeZone: userTimeZone });
+      const selectedDate = new Date(
+        Date.UTC(
+          localWeekStartDate.getUTCFullYear(),
+          localWeekStartDate.getUTCMonth(),
+          localWeekStartDate.getUTCDate() + DAY_OF_WEEK_ARRAY.indexOf(selectedDayOfWeek),
+          startTime.getHours(),
+          startTime.getMinutes(),
+        ),
+      );
       const newYoasobiUTCDate = getLocalToUtcUtil({
         localDate: selectedDate,
-        timeZone: deviceTimeZone,
+        timeZone: userTimeZone,
       }).toISOString();
       return newYoasobiUTCDate;
     } catch {
       return null;
     }
-  }, [deviceLocalDate, deviceTimeZone, selectedDayOfWeek, startTime]);
+  }, [weekStartDate, userTimeZone, selectedDayOfWeek, startTime]);
 
   const weeklyQueryStatus =
     !isReady || !userId || !weekStartDateString || !isWeeklyQuerySettled || isWeeklyYoasobiLoading
@@ -830,7 +838,7 @@ export const HomeScreen = memo(() => {
             {resultCondition && (
               <YoasobiResultBox yoasobiDate={currentYoasobi.yoasobiDate} createdDate={currentYoasobi.createdAt} />
             )}
-            {creationFormCondition && (
+            {creationFormCondition && userTimeZone && (
               <Stack flex={1} width="$fluid" gap="$size.x4">
                 <YoasobiChoiceBox
                   selectedDayOfWeek={selectedDayOfWeek}
@@ -838,7 +846,7 @@ export const HomeScreen = memo(() => {
                   isMidnightNotificationEnabled={isMidnightNotificationEnabled}
                   activeSheet={activeSheet}
                   startTimeValue={startTime}
-                  userTimeZone={deviceTimeZone}
+                  userTimeZone={userTimeZone}
                   durationValue={duration}
                   onChangeStartTime={(event, date) => handleChangeStartTime(event, date)}
                   onIncreaseDuration={handleIncreaseDuration}
@@ -851,7 +859,7 @@ export const HomeScreen = memo(() => {
                   onCheckMidnightNotification={handleCheckMidnightNotification}
                 />
                 {!newYoasobiDate && (
-                  <Text color="$colors.cloudGray">현재 지역에서 사용할 수 있는 시작 시간을 선택해 주세요.</Text>
+                  <Text color="$colors.cloudGray">계정 시간대에서 사용할 수 있는 시작 시간을 선택해 주세요.</Text>
                 )}
                 {isCreationResultUnknown ? (
                   <BlurBox px="$size.x4">
