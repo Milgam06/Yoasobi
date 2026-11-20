@@ -1,12 +1,4 @@
-import { Field, InputType, ObjectType } from '@nestjs/graphql';
-import { IsUUID } from 'class-validator';
-
-@InputType()
-export class DeleteUserInputDto {
-  @Field(() => String)
-  @IsUUID()
-  userId: string;
-}
+import { Field, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
 export class DeleteUserOutputDto {

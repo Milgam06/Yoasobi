@@ -80,7 +80,7 @@ const LoginBox = memo<ILoginBoxProps>(
           </Text>
         </Stack>
         <Stack gap="$size.x4">
-          {!isPlatformIOS && (
+          {/* {!isPlatformIOS && (
             <Stack>
               <AppleAuthentication.AppleAuthenticationButton
                 buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
@@ -97,7 +97,7 @@ const LoginBox = memo<ILoginBoxProps>(
                 <Separator width="$fluid" borderColor="$colors.cloudGray" />
               </Stack>
             </Stack>
-          )}
+          )} */}
           <Stack width="$fluid" gap="$size.x4">
             <BlurBox>
               <Stack width="$fluid" gap="$size.x4">
@@ -402,7 +402,7 @@ const SignUpBox = memo<ISignUpBoxProps>(
 
 export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
   const route = useRouter();
-  const { appUser, signUpWithEmail, signInWithEmail, signInWithApple } = useAuth();
+  const { appUser, hasAppUserError, retryAppUser, signUpWithEmail, signInWithEmail, signInWithApple } = useAuth();
   const [currentAuthType, setCurrentAuthType] = useState<IAuthType>(authType);
   const [loginFormData, setLoginFormData] = useState<ILoginFormType>({
     email: '',
@@ -567,26 +567,53 @@ export const AuthScreen = memo<IAuthScreenProps>(({ authType }) => {
   const isPlatformAndroid = Platform.OS === 'android';
   return (
     <LinearGradientLayout screenEdge={['top']} hasHeader>
+      {hasAppUserError && (
+        <Alert
+          isOpen={hasAppUserError}
+          onClose={retryAppUser}
+          isErrorAlert
+          alertPadding="$size.x4"
+          contentBorderRadius={12}>
+          <Stack gap="$size.x3">
+            <Text color="$colors.moonSoftWhite">프로필을 불러오지 못했어요. 다시 시도해 주세요.</Text>
+            <Button height="$size.x10" onPress={retryAppUser}>
+              <Text fontWeight="$700" color="$colors.lampYellow">
+                재시도
+              </Text>
+            </Button>
+          </Stack>
+        </Alert>
+      )}
       {!!authError && (
-        <Alert isOpen={!!authError} alertPadding="$size.x4" isErrorAlert onClose={handleCloseAuthError}>
-          <Stack width="$fluid" gap="$size.x4">
-            <Stack width="$fluid" gap="$size.x3">
-              <Stack flexDirection="row" items="center" gap="$size.x2_5">
-                <Stack py="$size.x1_5" px="$size.x1" bg="#ff909057" style={{ borderRadius: 12 }}>
-                  <FontAwesomeIcon icon={faExclamation} size={24} color="#ff7474" />
-                </Stack>
-                <Text fontSize="$9" fontWeight="$900">
-                  {authError.authType === 'login' ? '로그인' : '회원가입'}에 실패했어요
-                </Text>
+        <Alert
+          isOpen={!!authError}
+          alertPadding="$size.x4"
+          contentBorderRadius={12}
+          isErrorAlert
+          onClose={handleCloseAuthError}>
+          <Stack width="$fluid" gap="$size.x4" items="center">
+            <Stack width="$fluid" gap="$size.x2_5" items="center">
+              <Stack
+                width="$size.x13"
+                height="$size.x13"
+                justify="center"
+                items="center"
+                bg="#ff484883"
+                style={{ borderRadius: 50 }}>
+                <FontAwesomeIcon icon={faExclamation} size={26} color="#E67E7E" />
               </Stack>
-              <Text fontSize="$5" color="$colors.cloudGray">
+              <Text fontSize="$8" fontWeight="$900" color="$colors.moonSoftWhite" style={{ textAlign: 'center' }}>
+                {authError.authType === 'login' ? '로그인' : '회원가입'}에 실패했어요
+              </Text>
+              <Text fontSize="$5" fontWeight="$600" color="$colors.cloudGray" style={{ textAlign: 'center' }}>
                 {authError.message}
               </Text>
             </Stack>
+            <Separator width="$fluid" borderColor="#ffffff1f" />
             <Button
               width="$fluid"
               height="$fit"
-              py="$size.x2_5"
+              py="$size.x3"
               bg="$colors.lampYellow"
               borderTopLeftRadius="$size.x3"
               borderTopRightRadius="$size.x3"

@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma';
 import { YoasobiModule } from './yoasobi';
 import { UtilModule } from './utils';
 import { UserModule } from './user/user.module';
+import { AuthModule } from './auth';
 
 @Module({
   imports: [
@@ -20,10 +21,12 @@ import { UserModule } from './user/user.module';
         '../../packages/shared/graphql/schema.gql',
       ),
       playground: false,
+      context: ({ req }) => ({ req }),
     }),
     PrismaModule,
     UtilModule,
     UserModule,
+    AuthModule,
     YoasobiModule,
   ],
 })

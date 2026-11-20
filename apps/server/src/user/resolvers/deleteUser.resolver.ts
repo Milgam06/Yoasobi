@@ -1,6 +1,7 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { CurrentUser, ICurrentUser } from 'src/auth';
+import { Mutation, Resolver } from '@nestjs/graphql';
 import { DeleteUserService } from '../services';
-import { DeleteUserInputDto, DeleteUserOutputDto } from '../dto';
+import { DeleteUserOutputDto } from '../dto';
 
 @Resolver()
 export class DeleteUserResolver {
@@ -8,8 +9,8 @@ export class DeleteUserResolver {
 
   @Mutation(() => DeleteUserOutputDto)
   async deleteUser(
-    @Args('input') input: DeleteUserInputDto,
+    @CurrentUser() user: ICurrentUser,
   ): Promise<DeleteUserOutputDto> {
-    return await this.deleteUserService.execute(input);
+    return await this.deleteUserService.execute({ userId: user.id });
   }
 }

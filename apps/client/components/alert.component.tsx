@@ -6,13 +6,24 @@ type IAlertProps = {
   isOpen: boolean;
   onClose: () => void;
   alertPadding?: GetThemeValueForKey<'padding'> | number;
+  alertMargin?: GetThemeValueForKey<'margin'> | number;
+  contentBorderRadius?: number;
   bg?: GetThemeValueForKey<'backgroundColor'> | OpaqueColorValue;
   isErrorAlert?: boolean;
   children: ReactNode;
 };
 
 export const Alert = memo<IAlertProps>(
-  ({ isOpen, onClose, alertPadding = '$size.x2', bg = '$colors.midnightPurple', isErrorAlert = false, children }) => {
+  ({
+    isOpen,
+    onClose,
+    alertPadding = '$size.x2',
+    alertMargin = '$size.x4',
+    contentBorderRadius = 0,
+    bg = '$colors.midnightPurple',
+    isErrorAlert = false,
+    children,
+  }) => {
     const handlePressCloseAlert = useCallback(() => {
       onClose();
     }, [onClose]);
@@ -31,9 +42,10 @@ export const Alert = memo<IAlertProps>(
             bg={bg}
             borderWidth={1}
             borderColor={isErrorAlert ? '$colors.emberRed' : '$colors.cloudGray'}
-            radiused={false}
+            m={alertMargin}
             p={alertPadding}
             y={0}
+            style={{ borderRadius: contentBorderRadius }}
             enterStyle={{
               scale: 0.96,
               y: 20,

@@ -10,8 +10,8 @@ mutation CreateUser($input: CreateUserInputDto!) {
   }
 }
 
-query getExistingUser($input: GetUserInputDto!) {
-  getUser(input: $input) {
+query getExistingUser {
+  getUser {
     user {
       id
       name

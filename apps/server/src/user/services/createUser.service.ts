@@ -10,9 +10,11 @@ export class CreateUserService {
     userId,
     name,
     timezone,
-  }: CreateUserInputDto): Promise<CreateUserOutputDto> {
-    const user = await this.prismaService.user.create({
-      data: {
+  }: CreateUserInputDto & { userId: string }): Promise<CreateUserOutputDto> {
+    const user = await this.prismaService.user.upsert({
+      where: { id: userId },
+      update: {},
+      create: {
         id: userId,
         name,
         timezone,
