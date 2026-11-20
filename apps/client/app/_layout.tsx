@@ -19,7 +19,7 @@ import { useDidUpdate } from 'rooks';
 import { TamaguiProvider } from 'tamagui';
 import { ApolloProvider } from '@apollo/client/react';
 import { apolloClient } from '@/libs';
-import { AuthProvider } from '@/providers';
+import { AuthProvider, DateTimeProvider } from '@/providers';
 
 preventAutoHideAsync();
 
@@ -54,7 +54,9 @@ export default function RootLayout() {
         <GestureHandlerRootView>
           <TamaguiProvider config={config}>
             <AuthProvider>
-              <Stack screenOptions={{ headerShown: false }} />
+              <DateTimeProvider>
+                <Stack screenOptions={{ headerShown: false }} />
+              </DateTimeProvider>
             </AuthProvider>
           </TamaguiProvider>
         </GestureHandlerRootView>

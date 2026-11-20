@@ -18,15 +18,15 @@ async function main() {
     },
   });
 
-  // await prisma.user.upsert({
-  //   where: { id: '00000000-0000-0000-0000-000000000002' },
-  //   update: {},
-  //   create: {
-  //     id: '00000000-0000-0000-0000-000000000002',
-  //     name: 'Test02',
-  //     timezone: 'Asia/Tokyo',
-  //   },
-  // });
+  await prisma.user.upsert({
+    where: { id: '924e8167-7e96-4956-bd69-b3cdc047d5dd' },
+    update: {},
+    create: {
+      id: '924e8167-7e96-4956-bd69-b3cdc047d5dd',
+      name: 'Test02',
+      timezone: 'America/New_York',
+    },
+  });
 
   // const yoasobi1 = await prisma.yoasobi.upsert({
   //   where: {
