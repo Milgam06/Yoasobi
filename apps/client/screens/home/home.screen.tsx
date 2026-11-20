@@ -105,10 +105,23 @@ const YoasobiChoiceBox = memo<IYoasobiChoiceBoxProps>(
     return (
       <BlurBox>
         <Stack width="$fluid" justify="center" items="center" gap="$size.x5">
-          <Stack width="$fluid" justify="center" gap="$size.x1">
-            <Text fontSize="$5" color="$colors.cloudGray">
-              Weekly Pick
-            </Text>
+          <Stack width="$fluid" justify="center" gap="$size.x2">
+            <Stack width="$fluid" flexDirection="row" items="center" gap="$size.x2">
+              <Text fontSize="$5" fontWeight="$600" color="$colors.cloudGray">
+                Weekly Pick
+              </Text>
+              <Stack
+                justify="center"
+                items="center"
+                bg="$colors.midnightPurple"
+                px="$size.x2"
+                py="$size.x0_5"
+                style={{ borderRadius: 24 }}>
+                <Text fontSize="$3" fontWeight="$700" color="$colors.moonSoftWhite">
+                  {userTimeZone}
+                </Text>
+              </Stack>
+            </Stack>
             <Text fontSize="$7" fontWeight="$900" color="$colors.moonSoftWhite">
               요일을 뽑거나, 직접 골라보세요!
             </Text>
