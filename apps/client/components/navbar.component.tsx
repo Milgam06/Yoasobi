@@ -26,7 +26,7 @@ export const Navbar = memo((props: INavbarProps) => {
       position="absolute"
       b={0}
       onLayout={(event) => onHeightChange?.(event.nativeEvent.layout.height)}
-      pt="$size.x2"
+      pt="$size.x1"
       pb={insets.bottom}
       flexDirection="row"
       justify="space-between"
@@ -49,15 +49,15 @@ export const Navbar = memo((props: INavbarProps) => {
         opacity={isSelectedItemHome ? 1 : 0.4}
         onPress={() => navigation.navigate('home')}
         animation="200ms"
-        gap="$size.x1"
+        gap="$size.x0_25"
         {...(isSelectedItemHome && {
           shadowColor: '$colors.lampYellow',
           shadowOpacity: 1,
           shadowRadius: 14,
           shadowOffset: { width: 0, height: 4 },
         })}>
-        <FontAwesomeIcon size={24} icon={faHome} color="#FDE8D6" />
-        <Text fontSize="$2" fontWeight="$800" color="$colors.moonSoftWhite">
+        <FontAwesomeIcon size={22} icon={faHome} color="#FDE8D6" />
+        <Text fontSize="$1" fontWeight="$800" color="$colors.moonSoftWhite">
           HOME
         </Text>
       </Stack>
@@ -69,15 +69,15 @@ export const Navbar = memo((props: INavbarProps) => {
         opacity={isSelectedItemHistory ? 1 : 0.4}
         onPress={() => navigation.navigate('history')}
         animation="200ms"
-        gap="$size.x1"
+        gap="$size.x0_5"
         {...(isSelectedItemHistory && {
           shadowColor: '$colors.lampYellow',
           shadowOpacity: 1,
           shadowRadius: 14,
           shadowOffset: { width: 0, height: 4 },
         })}>
-        <FontAwesomeIcon size={24} icon={faCalendarDays} color="#FDE8D6" />
-        <Text fontSize="$2" fontWeight="$800" color="$colors.moonSoftWhite">
+        <FontAwesomeIcon size={22} icon={faCalendarDays} color="#FDE8D6" />
+        <Text fontSize="$1" fontWeight="$800" color="$colors.moonSoftWhite">
           HISTORY
         </Text>
       </Stack>
