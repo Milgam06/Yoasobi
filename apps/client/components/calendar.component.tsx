@@ -21,14 +21,14 @@ type ICalendarProps = Pick<CalendarProps, 'dayComponent'> & {
 };
 
 export const Calendar = memo<ICalendarProps>(({ yearMonth, onMonthChange, dayComponent }) => {
-  const [year, number] = yearMonth.split('-').map(Number);
+  const [year, month] = yearMonth.split('-').map(Number);
 
   const moveMonth = useCallback(
     (offset: number) => {
-      const date = new Date(Date.UTC(year, number - 1 + offset, 1));
+      const date = new Date(Date.UTC(year, month - 1 + offset, 1));
       onMonthChange(date.toISOString().slice(0, 7));
     },
-    [year, number, onMonthChange],
+    [year, month, onMonthChange],
   );
 
   const handlePreviousMonth = useCallback(() => {
@@ -43,7 +43,7 @@ export const Calendar = memo<ICalendarProps>(({ yearMonth, onMonthChange, dayCom
     <Stack>
       <Stack flexDirection="row" items="center">
         <Text flex={1} color="$colors.moonSoftWhite" fontSize="$7" fontWeight="$800">
-          {year}년 {number}월
+          {year}년 {month}월
         </Text>
         {[-1, 1].map((offset) => (
           <Stack
