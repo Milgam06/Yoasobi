@@ -36,30 +36,38 @@ async function main() {
 
   const timezone = 'Asia/Seoul';
   const today = dayjs().tz(timezone);
-  const testYoasobi1Date = today
-    .add(2, 'day')
-    .hour(3)
-    .minute(0)
-    .second(0)
-    .millisecond(0)
-    .toDate();
-  const testYoasobi2Date = today
-    .add(-3, 'day')
-    .hour(3)
-    .minute(0)
-    .second(0)
-    .millisecond(0)
-    .toDate();
 
-  const testWeekStartDate1 = dayjs(testYoasobi1Date)
-    .tz(timezone)
-    .startOf('week')
-    .toDate();
+  const getWeekStartDate = (date: Date) => {
+    const weekStartDate = dayjs(date).tz(timezone).startOf('week').toDate();
+    return weekStartDate;
+  };
 
-  const testWeekStartDate2 = dayjs(testYoasobi2Date)
-    .tz(timezone)
-    .startOf('week')
-    .toDate();
+  const setYoasobiDate = (
+    date: dayjs.Dayjs,
+    yoasobiHour: number = 3,
+    changes: { unit: dayjs.ManipulateType; amount: number }[],
+  ) => {
+    const yoasobiDate = changes.reduce(
+      (updatedDate, { unit, amount }) => updatedDate.add(amount, unit),
+      date.hour(yoasobiHour).minute(0).second(0).millisecond(0),
+    );
+    return yoasobiDate.toDate();
+  };
+
+  const testYoasobi1Date = setYoasobiDate(today, 3, [
+    { unit: 'day', amount: 2 },
+  ]);
+  const testYoasobi2Date = setYoasobiDate(today, 3, [
+    { unit: 'day', amount: -3 },
+  ]);
+  const testYoasobi3Date = setYoasobiDate(today, 2, [
+    { unit: 'week', amount: -2 },
+    { unit: 'day', amount: 0 },
+  ]);
+
+  const testWeekStartDate1 = getWeekStartDate(testYoasobi1Date);
+  const testWeekStartDate2 = getWeekStartDate(testYoasobi2Date);
+  const testWeekStartDate3 = getWeekStartDate(testYoasobi3Date);
 
   const dayOfWeek = [
     DayOfWeek.SUNDAY,
@@ -73,6 +81,7 @@ async function main() {
 
   const testDayOfWeek1 = dayOfWeek[dayjs(testYoasobi1Date).tz(timezone).day()];
   const testDayOfWeek2 = dayOfWeek[dayjs(testYoasobi2Date).tz(timezone).day()];
+  const testDayOfWeek3 = dayOfWeek[dayjs(testYoasobi3Date).tz(timezone).day()];
 
   await prisma.yoasobi.upsert({
     where: {
@@ -110,6 +119,24 @@ async function main() {
       yoasobiDate: testYoasobi2Date,
       weekStartDate: testWeekStartDate2,
       alarmTime: testYoasobi2Date,
+      duration: 90,
+    },
+  });
+
+  await prisma.yoasobi.upsert({
+    where: {
+      userId_weekStartDate: {
+        userId: testUser1.id,
+        weekStartDate: testWeekStartDate3,
+      },
+    },
+    update: {},
+    create: {
+      userId: testUser1.id,
+      dayOfWeek: testDayOfWeek3,
+      yoasobiDate: testYoasobi3Date,
+      weekStartDate: testWeekStartDate3,
+      alarmTime: testYoasobi3Date,
       duration: 90,
     },
   });
