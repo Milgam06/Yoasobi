@@ -105,8 +105,9 @@ type HistoryEntity {
   createdAt: DateTime!
 }
 
-type GetHistoryOutputDto {
+type GetHistoryWithYoasobiOutputDto {
   history: HistoryEntity!
+  yoasobi: YoasobiEntity!
 }
 
 type UpdateHistoryOutputDto {
@@ -123,14 +124,14 @@ type Query {
   getYoasobi(input: GetYoasobiInputDto!): GetYoasobiOutputDto!
   getYoasobisWithHistory: GetYoasobisWithHistoryOutputDto!
   getHistories: GetHistoriesOutputDto!
-  getHistory(input: GetHistoryInputDto!): GetHistoryOutputDto!
+  getHistoryWithYoasobi(input: GetHistoryWithYoasobiInputDto!): GetHistoryWithYoasobiOutputDto!
 }
 
 input GetYoasobiInputDto {
   weekStartDate: DateTime!
 }
 
-input GetHistoryInputDto {
+input GetHistoryWithYoasobiInputDto {
   historyId: String!
 }
 
