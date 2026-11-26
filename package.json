@@ -17,6 +17,6 @@
     "codegen": "yarn workspace @yoasobi/client codegen",
     "db:up": "docker compose -f infra/postgres/docker-compose.dev.yml up -d",
     "db:down": "docker compose -f infra/postgres/docker-compose.dev.yml down -v",
-    "db:seed": "yarn workspace @yoasobi/server prisma db seed"
+    "db:seed": "yarn workspace @yoasobi/server prisma migrate deploy && yarn workspace @yoasobi/server prisma db seed"
   }
 }
