@@ -18,6 +18,10 @@ export class HistoryEntity {
 
   @Field(() => String)
   @IsString()
+  title: string;
+
+  @Field(() => String)
+  @IsString()
   note: string;
 
   @Field(() => [String])

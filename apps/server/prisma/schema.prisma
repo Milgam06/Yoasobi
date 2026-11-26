@@ -57,6 +57,7 @@ model History {
   yoasobiId String @unique
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
+  title String
   note String
   image String[]
   createdAt DateTime @default(now())
