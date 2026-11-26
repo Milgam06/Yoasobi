@@ -213,7 +213,7 @@ export type YoasobiGroupByOutputType = {
   _max: YoasobiMaxAggregateOutputType | null
 }
 
-type GetYoasobiGroupByPayload<T extends YoasobiGroupByArgs> = Prisma.PrismaPromise<
+export type GetYoasobiGroupByPayload<T extends YoasobiGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<YoasobiGroupByOutputType, T['by']> &
       {
@@ -1383,6 +1383,11 @@ export type YoasobiFindManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Skip the first `n` Yoasobis.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Yoasobis.
+   */
   distinct?: Prisma.YoasobiScalarFieldEnum | Prisma.YoasobiScalarFieldEnum[]
 }
 

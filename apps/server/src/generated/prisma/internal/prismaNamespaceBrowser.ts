@@ -101,6 +101,7 @@ export const HistoryScalarFieldEnum = {
   id: 'id',
   yoasobiId: 'yoasobiId',
   userId: 'userId',
+  title: 'title',
   note: 'note',
   image: 'image',
   createdAt: 'createdAt'

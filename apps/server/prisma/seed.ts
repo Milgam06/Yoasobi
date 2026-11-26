@@ -158,6 +158,7 @@ async function main() {
     create: {
       yoasobiId: testYoasobi2.id,
       userId: testUser1.id,
+      title: '',
       note: '오늘 밤도 즐거운 밤산책이었다!',
       image: [],
     },

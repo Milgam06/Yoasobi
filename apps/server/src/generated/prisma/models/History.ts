@@ -28,6 +28,7 @@ export type HistoryMinAggregateOutputType = {
   id: string | null
   yoasobiId: string | null
   userId: string | null
+  title: string | null
   note: string | null
   createdAt: Date | null
 }
@@ -36,6 +37,7 @@ export type HistoryMaxAggregateOutputType = {
   id: string | null
   yoasobiId: string | null
   userId: string | null
+  title: string | null
   note: string | null
   createdAt: Date | null
 }
@@ -44,6 +46,7 @@ export type HistoryCountAggregateOutputType = {
   id: number
   yoasobiId: number
   userId: number
+  title: number
   note: number
   image: number
   createdAt: number
@@ -55,6 +58,7 @@ export type HistoryMinAggregateInputType = {
   id?: true
   yoasobiId?: true
   userId?: true
+  title?: true
   note?: true
   createdAt?: true
 }
@@ -63,6 +67,7 @@ export type HistoryMaxAggregateInputType = {
   id?: true
   yoasobiId?: true
   userId?: true
+  title?: true
   note?: true
   createdAt?: true
 }
@@ -71,6 +76,7 @@ export type HistoryCountAggregateInputType = {
   id?: true
   yoasobiId?: true
   userId?: true
+  title?: true
   note?: true
   image?: true
   createdAt?: true
@@ -153,6 +159,7 @@ export type HistoryGroupByOutputType = {
   id: string
   yoasobiId: string
   userId: string
+  title: string
   note: string
   image: string[]
   createdAt: Date
@@ -161,7 +168,7 @@ export type HistoryGroupByOutputType = {
   _max: HistoryMaxAggregateOutputType | null
 }
 
-type GetHistoryGroupByPayload<T extends HistoryGroupByArgs> = Prisma.PrismaPromise<
+export type GetHistoryGroupByPayload<T extends HistoryGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<HistoryGroupByOutputType, T['by']> &
       {
@@ -183,6 +190,7 @@ export type HistoryWhereInput = {
   id?: Prisma.StringFilter<"History"> | string
   yoasobiId?: Prisma.StringFilter<"History"> | string
   userId?: Prisma.StringFilter<"History"> | string
+  title?: Prisma.StringFilter<"History"> | string
   note?: Prisma.StringFilter<"History"> | string
   image?: Prisma.StringNullableListFilter<"History">
   createdAt?: Prisma.DateTimeFilter<"History"> | Date | string
@@ -194,6 +202,7 @@ export type HistoryOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   yoasobiId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   note?: Prisma.SortOrder
   image?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -208,6 +217,7 @@ export type HistoryWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.HistoryWhereInput[]
   NOT?: Prisma.HistoryWhereInput | Prisma.HistoryWhereInput[]
   userId?: Prisma.StringFilter<"History"> | string
+  title?: Prisma.StringFilter<"History"> | string
   note?: Prisma.StringFilter<"History"> | string
   image?: Prisma.StringNullableListFilter<"History">
   createdAt?: Prisma.DateTimeFilter<"History"> | Date | string
@@ -219,6 +229,7 @@ export type HistoryOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   yoasobiId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   note?: Prisma.SortOrder
   image?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -234,6 +245,7 @@ export type HistoryScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"History"> | string
   yoasobiId?: Prisma.StringWithAggregatesFilter<"History"> | string
   userId?: Prisma.StringWithAggregatesFilter<"History"> | string
+  title?: Prisma.StringWithAggregatesFilter<"History"> | string
   note?: Prisma.StringWithAggregatesFilter<"History"> | string
   image?: Prisma.StringNullableListFilter<"History">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"History"> | Date | string
@@ -241,6 +253,7 @@ export type HistoryScalarWhereWithAggregatesInput = {
 
 export type HistoryCreateInput = {
   id?: string
+  title: string
   note: string
   image?: Prisma.HistoryCreateimageInput | string[]
   createdAt?: Date | string
@@ -252,6 +265,7 @@ export type HistoryUncheckedCreateInput = {
   id?: string
   yoasobiId: string
   userId: string
+  title: string
   note: string
   image?: Prisma.HistoryCreateimageInput | string[]
   createdAt?: Date | string
@@ -259,6 +273,7 @@ export type HistoryUncheckedCreateInput = {
 
 export type HistoryUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   note?: Prisma.StringFieldUpdateOperationsInput | string
   image?: Prisma.HistoryUpdateimageInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -270,6 +285,7 @@ export type HistoryUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   yoasobiId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   note?: Prisma.StringFieldUpdateOperationsInput | string
   image?: Prisma.HistoryUpdateimageInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -279,6 +295,7 @@ export type HistoryCreateManyInput = {
   id?: string
   yoasobiId: string
   userId: string
+  title: string
   note: string
   image?: Prisma.HistoryCreateimageInput | string[]
   createdAt?: Date | string
@@ -286,6 +303,7 @@ export type HistoryCreateManyInput = {
 
 export type HistoryUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   note?: Prisma.StringFieldUpdateOperationsInput | string
   image?: Prisma.HistoryUpdateimageInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -295,6 +313,7 @@ export type HistoryUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   yoasobiId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   note?: Prisma.StringFieldUpdateOperationsInput | string
   image?: Prisma.HistoryUpdateimageInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -327,6 +346,7 @@ export type HistoryCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   yoasobiId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   note?: Prisma.SortOrder
   image?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -336,6 +356,7 @@ export type HistoryMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   yoasobiId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   note?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -344,6 +365,7 @@ export type HistoryMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   yoasobiId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   note?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -433,6 +455,7 @@ export type HistoryUpdateimageInput = {
 
 export type HistoryCreateWithoutUserInput = {
   id?: string
+  title: string
   note: string
   image?: Prisma.HistoryCreateimageInput | string[]
   createdAt?: Date | string
@@ -442,6 +465,7 @@ export type HistoryCreateWithoutUserInput = {
 export type HistoryUncheckedCreateWithoutUserInput = {
   id?: string
   yoasobiId: string
+  title: string
   note: string
   image?: Prisma.HistoryCreateimageInput | string[]
   createdAt?: Date | string
@@ -480,6 +504,7 @@ export type HistoryScalarWhereInput = {
   id?: Prisma.StringFilter<"History"> | string
   yoasobiId?: Prisma.StringFilter<"History"> | string
   userId?: Prisma.StringFilter<"History"> | string
+  title?: Prisma.StringFilter<"History"> | string
   note?: Prisma.StringFilter<"History"> | string
   image?: Prisma.StringNullableListFilter<"History">
   createdAt?: Prisma.DateTimeFilter<"History"> | Date | string
@@ -487,6 +512,7 @@ export type HistoryScalarWhereInput = {
 
 export type HistoryCreateWithoutYoasobiInput = {
   id?: string
+  title: string
   note: string
   image?: Prisma.HistoryCreateimageInput | string[]
   createdAt?: Date | string
@@ -496,6 +522,7 @@ export type HistoryCreateWithoutYoasobiInput = {
 export type HistoryUncheckedCreateWithoutYoasobiInput = {
   id?: string
   userId: string
+  title: string
   note: string
   image?: Prisma.HistoryCreateimageInput | string[]
   createdAt?: Date | string
@@ -519,6 +546,7 @@ export type HistoryUpdateToOneWithWhereWithoutYoasobiInput = {
 
 export type HistoryUpdateWithoutYoasobiInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   note?: Prisma.StringFieldUpdateOperationsInput | string
   image?: Prisma.HistoryUpdateimageInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -528,6 +556,7 @@ export type HistoryUpdateWithoutYoasobiInput = {
 export type HistoryUncheckedUpdateWithoutYoasobiInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   note?: Prisma.StringFieldUpdateOperationsInput | string
   image?: Prisma.HistoryUpdateimageInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -536,6 +565,7 @@ export type HistoryUncheckedUpdateWithoutYoasobiInput = {
 export type HistoryCreateManyUserInput = {
   id?: string
   yoasobiId: string
+  title: string
   note: string
   image?: Prisma.HistoryCreateimageInput | string[]
   createdAt?: Date | string
@@ -543,6 +573,7 @@ export type HistoryCreateManyUserInput = {
 
 export type HistoryUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   note?: Prisma.StringFieldUpdateOperationsInput | string
   image?: Prisma.HistoryUpdateimageInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -552,6 +583,7 @@ export type HistoryUpdateWithoutUserInput = {
 export type HistoryUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   yoasobiId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   note?: Prisma.StringFieldUpdateOperationsInput | string
   image?: Prisma.HistoryUpdateimageInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -560,6 +592,7 @@ export type HistoryUncheckedUpdateWithoutUserInput = {
 export type HistoryUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   yoasobiId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   note?: Prisma.StringFieldUpdateOperationsInput | string
   image?: Prisma.HistoryUpdateimageInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -571,6 +604,7 @@ export type HistorySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   id?: boolean
   yoasobiId?: boolean
   userId?: boolean
+  title?: boolean
   note?: boolean
   image?: boolean
   createdAt?: boolean
@@ -582,6 +616,7 @@ export type HistorySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   yoasobiId?: boolean
   userId?: boolean
+  title?: boolean
   note?: boolean
   image?: boolean
   createdAt?: boolean
@@ -593,6 +628,7 @@ export type HistorySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   yoasobiId?: boolean
   userId?: boolean
+  title?: boolean
   note?: boolean
   image?: boolean
   createdAt?: boolean
@@ -604,12 +640,13 @@ export type HistorySelectScalar = {
   id?: boolean
   yoasobiId?: boolean
   userId?: boolean
+  title?: boolean
   note?: boolean
   image?: boolean
   createdAt?: boolean
 }
 
-export type HistoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "yoasobiId" | "userId" | "note" | "image" | "createdAt", ExtArgs["result"]["history"]>
+export type HistoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "yoasobiId" | "userId" | "title" | "note" | "image" | "createdAt", ExtArgs["result"]["history"]>
 export type HistoryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   yoasobi?: boolean | Prisma.YoasobiDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -633,6 +670,7 @@ export type $HistoryPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     id: string
     yoasobiId: string
     userId: string
+    title: string
     note: string
     image: string[]
     createdAt: Date
@@ -1064,6 +1102,7 @@ export interface HistoryFieldRefs {
   readonly id: Prisma.FieldRef<"History", 'String'>
   readonly yoasobiId: Prisma.FieldRef<"History", 'String'>
   readonly userId: Prisma.FieldRef<"History", 'String'>
+  readonly title: Prisma.FieldRef<"History", 'String'>
   readonly note: Prisma.FieldRef<"History", 'String'>
   readonly image: Prisma.FieldRef<"History", 'String[]'>
   readonly createdAt: Prisma.FieldRef<"History", 'DateTime'>
@@ -1263,6 +1302,11 @@ export type HistoryFindManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Skip the first `n` Histories.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Histories.
+   */
   distinct?: Prisma.HistoryScalarFieldEnum | Prisma.HistoryScalarFieldEnum[]
 }
 
