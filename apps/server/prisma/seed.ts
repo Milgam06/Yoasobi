@@ -58,11 +58,10 @@ async function main() {
     { unit: 'day', amount: 2 },
   ]);
   const testYoasobi2Date = setYoasobiDate(today, 3, [
-    { unit: 'day', amount: -3 },
+    { unit: 'week', amount: -1 },
   ]);
   const testYoasobi3Date = setYoasobiDate(today, 2, [
-    { unit: 'week', amount: -2 },
-    { unit: 'day', amount: 0 },
+    { unit: 'week', amount: -4 },
   ]);
 
   const testWeekStartDate1 = getWeekStartDate(testYoasobi1Date);
@@ -160,7 +159,12 @@ async function main() {
       userId: testUser1.id,
       title: '',
       note: '오늘 밤도 즐거운 밤산책이었다!',
-      image: [],
+      image: [
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRsD3Db87V9012ZNhPVe5_1D1pvnrUUDROjrFOwwaJ9Hw&s=10',
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRsD3Db87V9012ZNhPVe5_1D1pvnrUUDROjrFOwwaJ9Hw&s=10',
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRsD3Db87V9012ZNhPVe5_1D1pvnrUUDROjrFOwwaJ9Hw&s=10',
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRsD3Db87V9012ZNhPVe5_1D1pvnrUUDROjrFOwwaJ9Hw&s=10',
+      ],
     },
   });
 
