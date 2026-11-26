@@ -36,6 +36,29 @@ type GetYoasobiOutputDto {
   yoasobi: YoasobiEntity
 }
 
+type YoasobiHistory {
+  id: String!
+  title: String!
+  note: String!
+  image: [String!]!
+}
+
+type YoasobiWithHistory {
+  id: String!
+  userId: String!
+  dayOfWeek: DayOfWeek!
+  yoasobiDate: DateTime!
+  weekStartDate: DateTime!
+  alarmTime: DateTime!
+  duration: Int!
+  createdAt: DateTime!
+  history: YoasobiHistory
+}
+
+type GetYoasobisWithHistoryOutputDto {
+  yoasobis: [YoasobiWithHistory!]!
+}
+
 type DeleteYoasobiOutputDto {
   success: Boolean!
 }
@@ -64,14 +87,51 @@ type GetUsersOutputDto {
   users: [UserEntity!]!
 }
 
+type CreateHistoryOutputDto {
+  historyId: String!
+}
+
+type GetHistoriesOutputDto {
+  histories: [HistoryEntity!]!
+}
+
+type HistoryEntity {
+  id: String!
+  yoasobiId: String!
+  userId: String!
+  title: String!
+  note: String!
+  image: [String!]!
+  createdAt: DateTime!
+}
+
+type GetHistoryOutputDto {
+  history: HistoryEntity!
+}
+
+type UpdateHistoryOutputDto {
+  success: Boolean!
+}
+
+type DeleteHistoryOutputDto {
+  success: Boolean!
+}
+
 type Query {
   getUser: GetUserOutputDto!
   getUsers: GetUsersOutputDto!
   getYoasobi(input: GetYoasobiInputDto!): GetYoasobiOutputDto!
+  getYoasobisWithHistory: GetYoasobisWithHistoryOutputDto!
+  getHistories: GetHistoriesOutputDto!
+  getHistory(input: GetHistoryInputDto!): GetHistoryOutputDto!
 }
 
 input GetYoasobiInputDto {
   weekStartDate: DateTime!
+}
+
+input GetHistoryInputDto {
+  historyId: String!
 }
 
 type Mutation {
@@ -79,6 +139,9 @@ type Mutation {
   deleteUser: DeleteUserOutputDto!
   createYoasobi(input: CreateYoasobiInputDto!): CreateYoasobiOutputDto!
   deleteYoasobi(input: DeleteYoasobiInputDto!): DeleteYoasobiOutputDto!
+  createHistory(input: CreateHistoryInputDto!): CreateHistoryOutputDto!
+  updateHistory(input: UpdateHistoryInputDto!): UpdateHistoryOutputDto!
+  deleteHistory(input: DeleteHistoryInputDto!): DeleteHistoryOutputDto!
 }
 
 input CreateUserInputDto {
@@ -95,4 +158,22 @@ input CreateYoasobiInputDto {
 
 input DeleteYoasobiInputDto {
   yoasobiId: String!
+}
+
+input CreateHistoryInputDto {
+  yoasobiId: String!
+  title: String!
+  note: String!
+  image: [String!]!
+}
+
+input UpdateHistoryInputDto {
+  historyId: String!
+  title: String!
+  note: String!
+  image: [String!]!
+}
+
+input DeleteHistoryInputDto {
+  historyId: String!
 }

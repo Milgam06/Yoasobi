@@ -8,6 +8,7 @@ import { YoasobiModule } from './yoasobi';
 import { UtilModule } from './utils';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth';
+import { HistoryModule } from './history';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AuthModule } from './auth';
     UserModule,
     AuthModule,
     YoasobiModule,
+    HistoryModule,
   ],
 })
 export class AppModule {}
