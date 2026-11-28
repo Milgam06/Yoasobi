@@ -1,4 +1,4 @@
-import type { DayOfWeek } from '@/libs';
+import { DayOfWeek } from '@/libs';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
